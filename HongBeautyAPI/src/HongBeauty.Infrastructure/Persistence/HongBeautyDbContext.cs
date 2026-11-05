@@ -11,6 +11,7 @@ public sealed class HongBeautyDbContext(DbContextOptions<HongBeautyDbContext> op
     public DbSet<Product> Products => Set<Product>();
     public DbSet<ProductImage> ProductImages => Set<ProductImage>();
     public DbSet<BeautyService> BeautyServices => Set<BeautyService>();
+    public DbSet<BeautyAppointment> BeautyAppointments => Set<BeautyAppointment>();
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<UserAccount> Users => Set<UserAccount>();
     public DbSet<AuthActionToken> AuthActionTokens => Set<AuthActionToken>();
@@ -23,6 +24,17 @@ public sealed class HongBeautyDbContext(DbContextOptions<HongBeautyDbContext> op
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        var appointment = modelBuilder.Entity<BeautyAppointment>();
+        appointment.ToTable("beauty_appointments");
+        appointment.HasKey(x => x.Id);
+        appointment.HasIndex(x => new { x.ServiceId, x.StartsAt });
+        appointment.HasIndex(x => new { x.UserId, x.CreatedAt });
+        appointment.HasOne<UserAccount>().WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Restrict);
+        appointment.HasOne<BeautyService>().WithMany().HasForeignKey(x => x.ServiceId).OnDelete(DeleteBehavior.Restrict);
+        appointment.Property(x => x.ServiceName).HasMaxLength(180).IsRequired();
+        appointment.Property(x => x.Price).HasPrecision(18, 2);
+        appointment.Property(x => x.Status).HasMaxLength(20).IsRequired();
+
         var beautyService = modelBuilder.Entity<BeautyService>();
         beautyService.ToTable("beauty_services");
         beautyService.HasKey(x => x.Id);
