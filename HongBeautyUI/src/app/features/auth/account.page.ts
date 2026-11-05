@@ -15,12 +15,16 @@ import { AuthService, authErrorMessage } from '../../core/auth/auth.service';
       @if (auth.status() === 'loading') {
         <p role="status">Đang tải thông tin tài khoản…</p>
       } @else if (auth.user(); as user) {
-        <div class="card">
+        <div class="account-layout"><div class="profile-column"><div class="card">
+          <span class="eyebrow">HỒ SƠ CỦA BẠN</span><h2>Thông tin cá nhân</h2>
           <span class="label">HỌ VÀ TÊN</span><strong>{{ user.fullName }}</strong>
           <span class="label">EMAIL</span><span>{{ user.email }}</span>
           <span class="label">VAI TRÒ</span><span>{{ user.role === 'Admin' ? 'Quản trị viên' : user.role === 'Staff' ? 'Nhân viên' : 'Khách hàng' }}</span>
           <span class="label">XÁC NHẬN EMAIL</span><span>{{ user.emailVerified ? 'Đã xác nhận' : 'Chưa xác nhận' }}</span>
         </div>
+        @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
+        <button class="logout" type="button" (click)="logout()" [disabled]="busy()">{{ busy() ? 'Đang đăng xuất…' : 'Đăng xuất' }}</button>
+        </div><div class="settings-column">
         @if (!user.emailVerified) {
           <div class="section">
             <h2>Xác nhận email</h2>
@@ -45,8 +49,7 @@ import { AuthService, authErrorMessage } from '../../core/auth/auth.service';
             <button type="submit" [disabled]="changeBusy()">{{ changeBusy() ? 'Đang đổi…' : 'Đổi mật khẩu' }}</button>
           </form>
         </div>
-        @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
-        <button type="button" (click)="logout()" [disabled]="busy()">{{ busy() ? 'Đang đăng xuất…' : 'Đăng xuất' }}</button>
+        </div></div>
       } @else {
         <p>{{ passwordChanged() ? 'Phiên đăng nhập cũ đã kết thúc.' : 'Bạn cần đăng nhập để xem thông tin tài khoản.' }}</p>
         <a class="primary" routerLink="/login">Đăng nhập</a>
@@ -54,22 +57,27 @@ import { AuthService, authErrorMessage } from '../../core/auth/auth.service';
     </section>
   `,
   styles: [`
-    .account-page { max-width: 980px; min-height: 65vh; padding: 5rem 4vw 8rem; margin: auto; }
+    .account-page { max-width: 1180px; min-height: 65vh; padding: 5rem 4vw 8rem; margin: auto; }
+    .account-layout { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: clamp(1.5rem, 4vw, 4rem); align-items: start; }
+    .profile-column { position: sticky; top: 2rem; }.settings-column { display: grid; gap: 1.3rem; }
     .eyebrow, .label { letter-spacing: .2em; color: #a3746c; font-size: .7rem; font-weight: 700; }
     h1 { font-size: clamp(2.6rem, 5vw, 4.5rem); margin: .8rem 0 2.5rem; }
     p { color: #786b66; line-height: 1.7; }
-    .card { background: #f3eae4; padding: clamp(1.5rem, 4vw, 3rem); display: grid; gap: .7rem; max-width: 600px; }
+    .card { background: linear-gradient(145deg,#f2e3df,#f9f3ee); padding: clamp(1.5rem, 4vw, 3rem); display: grid; gap: .7rem; border-radius: 20px; box-shadow: 0 18px 42px #5f3f4014; }
+    .card h2 { font-size: 2rem; margin: .3rem 0 1.5rem; }.card .label { margin-top: .5rem; }
     .card strong { font-size: 1.3rem; font-weight: 600; margin-bottom: 1.2rem; }
     .card span:last-child { overflow-wrap: anywhere; }
     button, .primary { display: inline-block; margin-top: 2rem; border: 0; background: #342a2b; color: #fff; padding: 1rem 1.5rem; cursor: pointer; text-decoration: none; }
     button:disabled { opacity: .6; cursor: wait; }
     .error { color: #a33f42; }
     .success { background: #e7eee6; color: #3b6545; padding: 1rem 1.2rem; max-width: 600px; }
-    .section { max-width: 600px; padding: 2rem 0; border-bottom: 1px solid #e7d9d2; }
+    .section { background: #fff; padding: clamp(1.5rem, 3vw, 2.2rem); border: 1px solid #eddfda; border-radius: 20px; box-shadow: 0 12px 34px #5f3f400b; }
     .section h2 { font-size: 1.7rem; margin: 0; }
     form { display: flex; flex-direction: column; }
     label { font-size: .83rem; font-weight: 600; margin: 1rem 0 .5rem; }
-    input { width: 100%; border: 1px solid #d7c6be; background: #fff; padding: .9rem 1rem; outline-color: #a77576; border-radius: 0; }
+    input { width: 100%; border: 1px solid #d7c6be; background: #fff; padding: .9rem 1rem; outline-color: #a77576; border-radius: 9px; }
+    .logout { background: #fff; color: #5d3c49; border: 1px solid #d8bfc7; border-radius: 8px; }
+    @media(max-width:760px) { .account-page { padding: 3rem 5vw 5rem; }.account-layout { grid-template-columns: 1fr; }.profile-column { position: static; } }
   `],
 })
 export class AccountPage {

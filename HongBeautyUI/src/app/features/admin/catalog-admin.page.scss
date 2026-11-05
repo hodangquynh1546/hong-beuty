@@ -28,5 +28,6 @@ button { cursor: pointer; }.form-actions button,.item-actions button,.alert butt
 .thumb { flex: 0 0 65px; width: 65px; height: 65px; background: #e6d4cb; display: grid; place-items: center; color: #9e776d; font-family: serif; }.thumb img { width: 100%; height: 100%; object-fit: cover; }
 .item-actions { display: flex; gap: .5rem; flex-wrap: wrap; justify-content: flex-end; }.item-actions button { padding: .45rem .65rem; }.item-actions .danger { border-color: #ccaaa3; color: #a04e47; }
 .inactive { display: inline-block; color: #8c6559; background: #f5e7df; padding: .2rem .5rem; margin-left: .5rem; font-size: .7rem; }
+.image-preview { display: flex; align-items: center; gap: 1rem; margin: 1rem 0; }.image-preview img { width: 96px; height: 96px; object-fit: cover; border-radius: 10px; }.image-preview button { border: 0; background: none; color: #8c4c53; cursor: pointer; }
 @media (max-width: 900px) { .content-grid { grid-template-columns: 1fr; } }.heading { align-items: start; }
 @media (max-width: 600px) { .admin-page { padding: 2rem 5vw 5rem; }.heading { display: block; }.heading a { display: inline-block; margin-top: 1rem; }.field-row { grid-template-columns: 1fr; gap: 0; }.items article { align-items: start; flex-direction: column; }.item-actions { margin-left: 0; } }

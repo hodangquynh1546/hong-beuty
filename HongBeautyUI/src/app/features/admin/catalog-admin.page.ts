@@ -34,6 +34,7 @@ export class CatalogAdminPage implements OnInit {
   readonly categories = signal<Category[]>([]);
   readonly loading = signal(true);
   readonly saving = signal(false);
+  readonly uploading = signal(false);
   readonly error = signal('');
   readonly notice = signal('');
   readonly activeTab = signal<'products' | 'categories'>('products');
@@ -88,6 +89,20 @@ export class CatalogAdminPage implements OnInit {
 
   resetProduct(): void { this.productEditId = null; this.productForm = emptyProduct(); }
 
+  uploadImage(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 2_000_000) {
+      this.error.set('Chọn ảnh JPG, PNG hoặc WebP nhỏ hơn 2 MB.'); return;
+    }
+    this.uploading.set(true); this.error.set('');
+    this.api.uploadImage(file).subscribe({
+      next: result => { this.productForm.imageUrl = result.url; this.uploading.set(false); this.notice.set('Đã tải ảnh lên. Bấm Lưu sản phẩm để sử dụng ảnh.'); },
+      error: error => { this.uploading.set(false); this.error.set(authErrorMessage(error, 'Không tải được ảnh lên.')); },
+    });
+  }
+
   saveProduct(): void {
     this.error.set(''); this.notice.set('');
     const input: ProductInput = {
@@ -119,8 +134,15 @@ export class CatalogAdminPage implements OnInit {
     if (!confirm(`Ngừng hiển thị sản phẩm “${product.name}”?`)) return;
     this.error.set(''); this.notice.set('');
     this.api.deactivateProduct(product.id).subscribe({
-      next: () => { this.notice.set('Đã ngừng hiển thị sản phẩm.'); this.loadProducts(); },
+      next: () => { this.notice.set('Đã ngừng hiển thị sản phẩm.'); this.products.update(items => items.map(x => x.id === product.id ? { ...x, isActive: false } : x)); },
       error: error => this.error.set(authErrorMessage(error, 'Không cập nhật được sản phẩm.')),
+    });
+  }
+
+  activateProduct(product: Product): void {
+    this.api.updateProduct(product.id, { ...product, categoryId: product.categoryId ?? null, imageUrl: product.imageUrl ?? null, isActive: true }).subscribe({
+      next: updated => { this.products.update(items => items.map(x => x.id === updated.id ? updated : x)); this.notice.set('Đã hiển thị sản phẩm.'); },
+      error: error => this.error.set(authErrorMessage(error, 'Không hiển thị được sản phẩm.')),
     });
   }
 
@@ -153,8 +175,15 @@ export class CatalogAdminPage implements OnInit {
     if (!confirm(`Ngừng hiển thị danh mục “${category.name}”?`)) return;
     this.error.set(''); this.notice.set('');
     this.api.deactivateCategory(category.id).subscribe({
-      next: () => { this.notice.set('Đã ngừng hiển thị danh mục.'); this.load(); },
+      next: () => { this.notice.set('Đã ngừng hiển thị danh mục.'); this.categories.update(items => items.map(x => x.id === category.id ? { ...x, isActive: false } : x)); },
       error: error => this.error.set(authErrorMessage(error, 'Không cập nhật được danh mục.')),
+    });
+  }
+
+  activateCategory(category: Category): void {
+    this.api.updateCategory(category.id, { ...category, isActive: true }).subscribe({
+      next: updated => { this.categories.update(items => items.map(x => x.id === updated.id ? updated : x)); this.notice.set('Đã hiển thị danh mục.'); },
+      error: error => this.error.set(authErrorMessage(error, 'Không hiển thị được danh mục.')),
     });
   }
 

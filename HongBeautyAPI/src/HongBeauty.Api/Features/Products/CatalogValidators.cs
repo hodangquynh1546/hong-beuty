@@ -24,7 +24,8 @@ public sealed class ProductInputValidator : AbstractValidator<ProductInput>
         RuleFor(x => x.SalePrice).GreaterThanOrEqualTo(0).LessThanOrEqualTo(x => x.Price).When(x => x.SalePrice.HasValue);
         RuleFor(x => x.Stock).GreaterThanOrEqualTo(0);
         RuleFor(x => x.ImageUrl).MaximumLength(2048).Must(x => x is null ||
-            (Uri.TryCreate(x, UriKind.Absolute, out var uri) && uri.Scheme == Uri.UriSchemeHttps))
-            .WithMessage("Image URL must use HTTPS.");
+            (x.StartsWith("/api/v1/product-images/", StringComparison.Ordinal) ||
+             (Uri.TryCreate(x, UriKind.Absolute, out var uri) && uri.Scheme == Uri.UriSchemeHttps)))
+            .WithMessage("Image URL must use HTTPS or a stored product image.");
     }
 }

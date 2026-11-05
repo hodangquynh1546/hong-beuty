@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { Product, ProductApiService } from '../../core/api/product-api.service';
 
 @Component({
   selector: 'app-home-page',
@@ -13,6 +14,10 @@ import { RouterLink } from '@angular/router';
       <div class="hero-art"><img src="/beauty-editorial.webp" alt="Tinh chất chăm sóc da trong không gian ấm áp" fetchpriority="high" /><span>HONG BEAUTY · BEAUTY RITUALS</span></div>
     </section>
     <section id="about" class="intro"><span class="eyebrow">CÂU CHUYỆN CỦA CHÚNG TÔI</span><h2>Dành thời gian cho chính mình là một cách yêu thương.</h2><p>Những lựa chọn chăm sóc tinh tế, dành cho nhịp sống và cảm nhận rất riêng của bạn. Khám phá sản phẩm, lưu địa chỉ và theo dõi đơn hàng thuận tiện trong một nơi.</p></section>
+    <section class="home-products"><div class="section-heading"><div><span class="eyebrow">KHÁM PHÁ CÙNG HONG BEAUTY</span><h2>Sản phẩm nổi bật</h2></div><a routerLink="/products">Xem tất cả ↗</a></div>
+      @if (products().length) { <div class="product-grid">@for (product of products(); track product.id) { <a class="product-card" [routerLink]="['/products', product.id]"><div class="product-photo">@if (product.imageUrl) { <img [src]="product.imageUrl" [alt]="product.name" loading="lazy" /> } @else { <span>HONG BEAUTY</span> }</div><div class="product-info"><h3>{{ product.name }}</h3><p>{{ product.description || 'Khám phá lựa chọn chăm sóc dành cho bạn.' }}</p><strong>{{ product.salePrice ?? product.price }} ₫</strong></div></a> }</div> }
+      @else { <p>Các sản phẩm mới đang được cập nhật.</p> }
+    </section>
     <section id="services" class="feature"><div class="feature-art" aria-hidden="true"><span>HONG BEAUTY</span></div><div><span class="eyebrow">CHĂM SÓC THEO CÁCH RIÊNG</span><h2>Khoảnh khắc của riêng bạn.</h2><p>Bắt đầu từ những sản phẩm bạn thực sự yêu thích và dành thời gian cho điều khiến mình thấy thoải mái.</p><a class="text-link" routerLink="/products">Khám phá sản phẩm ↗</a></div></section>
     <section id="contact" class="closing"><span class="eyebrow">HONG BEAUTY</span><h2>Chăm sóc bản thân, mỗi ngày.</h2><p>Mỗi ngày đều là một dịp để bạn yêu thương chính mình.</p><a class="primary" routerLink="/products">Bắt đầu khám phá <span aria-hidden="true">↗</span></a></section>
   `,
@@ -34,6 +39,7 @@ import { RouterLink } from '@angular/router';
     .line { width: 110%; height: 50%; border: 1px solid #fff7ef9c; border-radius: 50%; position: absolute; bottom: -28%; left: -5%; transform: rotate(-20deg); }
     .hero-art > span { position: absolute; bottom: 1.8rem; right: 2rem; color: #fff; letter-spacing: .2em; font-size: .65rem; z-index: 1; text-shadow: 0 2px 12px #55372e; }
     .intro { padding: 8rem 4vw; max-width: 850px; margin: auto; text-align: center; }
+    .home-products { max-width: 1440px; padding: 2rem 4vw 7rem; margin: auto; }.section-heading { display: flex; justify-content: space-between; align-items: end; gap: 1rem; margin-bottom: 2rem; }.section-heading h2 { font-size: clamp(2.2rem,4vw,4rem); margin: .5rem 0 0; }.section-heading a { color: #6f394f; }.product-grid { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 1.2rem; }.product-card { display: block; color: inherit; background: #fff; text-decoration: none; border-radius: 14px; overflow: hidden; box-shadow: 0 12px 30px #392b2a12; transition: transform .25s,box-shadow .25s; }.product-card:hover { transform: translateY(-5px); box-shadow: 0 18px 38px #392b2a24; }.product-photo { aspect-ratio: 4/4.5; background: #eadbd6; display: grid; place-items: center; overflow: hidden; color: #9f7772; letter-spacing: .15em; font-size: .75rem; }.product-photo img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s; }.product-card:hover img { transform: scale(1.04); }.product-info { padding: 1.1rem; }.product-info h3 { font-size: 1.1rem; margin: 0; }.product-info p { font-size: .82rem; height: 2.7em; overflow: hidden; line-height: 1.4; }.product-info strong { color: #774b58; }
     .intro h2,.feature h2,.closing h2 { font-size: clamp(2.2rem,4vw,4rem); line-height: 1.2; margin: 1rem 0; }
     .feature { display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: clamp(3rem,8vw,8rem); background: #f3eae4; padding: 5rem max(4vw, calc((100vw - 1214px)/2)); }
     .feature-art { min-height: 440px; background: linear-gradient(145deg,#3d2833a8,#3d283337),url('/beauty-editorial.webp') center 55%/cover; display: grid; place-items: center; border-radius: 6px; box-shadow: 0 20px 40px #6f4a4229; }
@@ -45,7 +51,14 @@ import { RouterLink } from '@angular/router';
     .closing .primary { background: #f5e9df; color: #3d2833; }
     .closing .primary:hover { background: #fff; }
     @keyframes hero-in { from { opacity: .5; transform: scale(1.05); } to { opacity: 1; transform: scale(1); } }
+    @media(max-width:900px){ .product-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } }
     @media(max-width:760px){ .hero,.feature { grid-template-columns: 1fr; } .hero { gap: 1rem; } .hero-art { min-height: 360px; } .intro { padding: 5rem 5vw; } .feature { padding: 4rem 5vw; } .feature-art { min-height: 300px; } }
+    @media(max-width:420px){ .product-grid { gap: .65rem; }.product-info { padding: .7rem; } }
+    @media(prefers-reduced-motion:reduce){ .product-card,.product-photo img { transition: none; } }
   `],
 })
-export class HomePage {}
+export class HomePage implements OnInit {
+  private readonly api = inject(ProductApiService);
+  readonly products = signal<Product[]>([]);
+  ngOnInit(): void { this.api.list().subscribe({ next: items => this.products.set(items.slice(0, 4)) }); }
+}

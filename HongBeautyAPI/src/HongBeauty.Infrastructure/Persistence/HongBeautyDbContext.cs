@@ -8,6 +8,7 @@ namespace HongBeauty.Infrastructure.Persistence;
 public sealed class HongBeautyDbContext(DbContextOptions<HongBeautyDbContext> options) : DbContext(options)
 {
     public DbSet<Product> Products => Set<Product>();
+    public DbSet<ProductImage> ProductImages => Set<ProductImage>();
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<UserAccount> Users => Set<UserAccount>();
     public DbSet<AuthActionToken> AuthActionTokens => Set<AuthActionToken>();
@@ -20,6 +21,12 @@ public sealed class HongBeautyDbContext(DbContextOptions<HongBeautyDbContext> op
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        var productImage = modelBuilder.Entity<ProductImage>();
+        productImage.ToTable("product_images");
+        productImage.HasKey(x => x.Id);
+        productImage.Property(x => x.ContentType).HasMaxLength(30).IsRequired();
+        productImage.Property(x => x.Data).IsRequired();
+
         var product = modelBuilder.Entity<Product>();
         product.ToTable("products");
         product.HasKey(x => x.Id);

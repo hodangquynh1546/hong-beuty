@@ -291,6 +291,29 @@ namespace HongBeauty.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("HongBeauty.Domain.Products.ProductImage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<byte[]>("Data")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("product_images", (string)null);
+                });
+
             modelBuilder.Entity("HongBeauty.Domain.Users.AuthActionToken", b =>
                 {
                     b.Property<Guid>("Id")

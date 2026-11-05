@@ -61,6 +61,12 @@ export class ProductApiService {
     return this.http.get<Product[]>('/api/v1/admin/products', { withCredentials: true });
   }
 
+  uploadImage(file: File): Observable<{ url: string }> {
+    const form = new FormData();
+    form.append('file', file);
+    return this.http.post<{ url: string }>('/api/v1/product-images', form, { withCredentials: true });
+  }
+
   createProduct(input: ProductInput): Observable<Product> {
     return this.http.post<Product>('/api/v1/admin/products', input, { withCredentials: true });
   }
