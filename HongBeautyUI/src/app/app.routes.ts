@@ -10,10 +10,13 @@ import { CatalogAdminPage } from './features/admin/catalog-admin.page';
 import { CartPage } from './features/orders/cart.page';
 import { AddressesPage } from './features/orders/addresses.page';
 import { OrdersPage } from './features/orders/orders.page';
+import { ServicesPage } from './features/services/services.page';
+import { ServicesAdminPage } from './features/admin/services-admin.page';
 
 export const routes: Routes = [
   { path: '', component: HomePage, title: 'Hong Beauty | Vẻ đẹp theo cách riêng' },
   { path: 'products', component: ProductsPage, title: 'Sản phẩm | Hong Beauty' },
+  { path: 'services', component: ServicesPage, title: 'Dịch vụ | Hong Beauty' },
   { path: 'products/:id', component: ProductDetailPage, title: 'Chi tiết sản phẩm | Hong Beauty' },
   { path: 'login', component: AuthFormPage, title: 'Đăng nhập | Hong Beauty' },
   { path: 'register', component: AuthFormPage, title: 'Đăng ký | Hong Beauty' },
@@ -22,6 +25,7 @@ export const routes: Routes = [
   { path: 'reset-password', component: PasswordRecoveryPage, title: 'Đặt lại mật khẩu | Hong Beauty' },
   { path: 'verify-email', component: EmailVerificationPage, title: 'Xác nhận email | Hong Beauty' },
   { path: 'admin/catalog', component: CatalogAdminPage, title: 'Quản trị danh mục | Hong Beauty' },
+  { path: 'admin/services', component: ServicesAdminPage, title: 'Quản trị dịch vụ | Hong Beauty' },
   { path: 'cart', component: CartPage, title: 'Giỏ hàng | Hong Beauty' },
   { path: 'account/addresses', component: AddressesPage, title: 'Địa chỉ giao hàng | Hong Beauty' },
   { path: 'account/orders', component: OrdersPage, title: 'Đơn hàng | Hong Beauty' },

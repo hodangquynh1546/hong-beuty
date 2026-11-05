@@ -1,6 +1,7 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Product, ProductApiService } from '../../core/api/product-api.service';
+import { BeautyService, ServiceApiService } from '../../core/api/service-api.service';
 
 @Component({
   selector: 'app-home-page',
@@ -18,7 +19,8 @@ import { Product, ProductApiService } from '../../core/api/product-api.service';
       @if (products().length) { <div class="product-grid">@for (product of products(); track product.id) { <a class="product-card" [routerLink]="['/products', product.id]"><div class="product-photo">@if (product.imageUrl) { <img [src]="product.imageUrl" [alt]="product.name" loading="lazy" /> } @else { <span>HONG BEAUTY</span> }</div><div class="product-info"><h3>{{ product.name }}</h3><p>{{ product.description || 'Khám phá lựa chọn chăm sóc dành cho bạn.' }}</p><strong>{{ product.salePrice ?? product.price }} ₫</strong></div></a> }</div> }
       @else { <p>Các sản phẩm mới đang được cập nhật.</p> }
     </section>
-    <section id="services" class="feature"><div class="feature-art" aria-hidden="true"><span>HONG BEAUTY</span></div><div><span class="eyebrow">CHĂM SÓC THEO CÁCH RIÊNG</span><h2>Khoảnh khắc của riêng bạn.</h2><p>Bắt đầu từ những sản phẩm bạn thực sự yêu thích và dành thời gian cho điều khiến mình thấy thoải mái.</p><a class="text-link" routerLink="/products">Khám phá sản phẩm ↗</a></div></section>
+    <section id="services" class="feature"><div class="feature-art" aria-hidden="true"><span>HONG BEAUTY</span></div><div><span class="eyebrow">CHĂM SÓC THEO CÁCH RIÊNG</span><h2>Khoảnh khắc của riêng bạn.</h2><p>Khám phá các dịch vụ chăm sóc sắc đẹp phù hợp với thời gian và nhu cầu của bạn.</p><a class="text-link" routerLink="/services">Khám phá dịch vụ ↗</a></div></section>
+    @if (services().length) { <section class="home-products"><div class="section-heading"><div><span class="eyebrow">DỊCH VỤ HONG BEAUTY</span><h2>Dành riêng cho bạn</h2></div><a routerLink="/services">Xem tất cả ↗</a></div><div class="product-grid">@for (service of services(); track service.id) { <a class="product-card" routerLink="/services"><div class="product-photo">@if (service.imageUrl) { <img [src]="service.imageUrl" [alt]="service.name" loading="lazy" /> } @else { <span>HONG BEAUTY</span> }</div><div class="product-info"><h3>{{ service.name }}</h3><p>{{ service.durationMinutes }} phút · {{ service.description }}</p><strong>{{ service.price }} ₫</strong></div></a> }</div></section> }
     <section id="contact" class="closing"><span class="eyebrow">HONG BEAUTY</span><h2>Chăm sóc bản thân, mỗi ngày.</h2><p>Mỗi ngày đều là một dịp để bạn yêu thương chính mình.</p><a class="primary" routerLink="/products">Bắt đầu khám phá <span aria-hidden="true">↗</span></a></section>
   `,
   styles: [`
@@ -59,6 +61,11 @@ import { Product, ProductApiService } from '../../core/api/product-api.service';
 })
 export class HomePage implements OnInit {
   private readonly api = inject(ProductApiService);
+  private readonly serviceApi = inject(ServiceApiService);
   readonly products = signal<Product[]>([]);
-  ngOnInit(): void { this.api.list().subscribe({ next: items => this.products.set(items.slice(0, 4)) }); }
+  readonly services = signal<BeautyService[]>([]);
+  ngOnInit(): void {
+    this.api.list().subscribe({ next: items => this.products.set(items.slice(0, 4)) });
+    this.serviceApi.list().subscribe({ next: items => this.services.set(items.slice(0, 4)) });
+  }
 }

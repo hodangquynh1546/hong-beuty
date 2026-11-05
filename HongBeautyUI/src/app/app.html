@@ -4,19 +4,19 @@
   <nav aria-label="Điều hướng chính">
     <a routerLink="/">Trang chủ</a>
     <a routerLink="/products">Sản phẩm</a>
-    <a routerLink="/" fragment="services">Khám phá</a>
+    <a routerLink="/services">Dịch vụ</a>
     <a routerLink="/" fragment="about">Về chúng tôi</a>
   </nav>
   <div class="account-links">
     <a routerLink="/cart">Giỏ hàng</a>
-    @if (auth.user(); as user) { <a routerLink="/account/orders">Đơn hàng</a> @if (user.permissions.includes('catalog.write')) { <a routerLink="/admin/catalog">Sản phẩm</a> } @if (user.permissions.includes('orders.manage')) { <a routerLink="/admin/orders">Quản trị đơn</a> } <a routerLink="/account">{{ user.fullName }}</a> }
+    @if (auth.user(); as user) { <a routerLink="/account/orders">Đơn hàng</a> @if (user.permissions.includes('catalog.write')) { <a routerLink="/admin/catalog">Sản phẩm</a><a routerLink="/admin/services">Quản trị dịch vụ</a> } @if (user.permissions.includes('orders.manage')) { <a routerLink="/admin/orders">Quản trị đơn</a> } <a routerLink="/account">{{ user.fullName }}</a> }
     @else { <a routerLink="/login">Đăng nhập</a><a class="contact-link" routerLink="/register">Đăng ký <span aria-hidden="true">↗</span></a> }
   </div>
 </header>
 <main><router-outlet /></main>
 <footer>
   <div><strong>HONG BEAUTY</strong><p>Vẻ đẹp được nuôi dưỡng bằng sự thấu hiểu.</p></div>
-  <div><span>Khám phá</span><a routerLink="/products">Sản phẩm</a><a routerLink="/" fragment="services">Cảm hứng làm đẹp</a><a routerLink="/cart">Giỏ hàng</a></div>
+  <div><span>Khám phá</span><a routerLink="/products">Sản phẩm</a><a routerLink="/services">Dịch vụ</a><a routerLink="/cart">Giỏ hàng</a></div>
   <div><span>Thông tin</span><a routerLink="/" fragment="about">Về chúng tôi</a><a routerLink="/account">Tài khoản</a><a routerLink="/account/orders">Đơn hàng</a></div>
   <small>© 2026 Hong Beauty. Chăm sóc vẻ đẹp theo cách riêng của bạn.</small>
 </footer>

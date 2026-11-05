@@ -1,6 +1,7 @@
 using HongBeauty.Domain.Products;
 using HongBeauty.Domain.Orders;
 using HongBeauty.Domain.Users;
+using HongBeauty.Domain.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace HongBeauty.Infrastructure.Persistence;
@@ -9,6 +10,7 @@ public sealed class HongBeautyDbContext(DbContextOptions<HongBeautyDbContext> op
 {
     public DbSet<Product> Products => Set<Product>();
     public DbSet<ProductImage> ProductImages => Set<ProductImage>();
+    public DbSet<BeautyService> BeautyServices => Set<BeautyService>();
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<UserAccount> Users => Set<UserAccount>();
     public DbSet<AuthActionToken> AuthActionTokens => Set<AuthActionToken>();
@@ -21,6 +23,16 @@ public sealed class HongBeautyDbContext(DbContextOptions<HongBeautyDbContext> op
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        var beautyService = modelBuilder.Entity<BeautyService>();
+        beautyService.ToTable("beauty_services");
+        beautyService.HasKey(x => x.Id);
+        beautyService.HasIndex(x => x.Slug).IsUnique();
+        beautyService.Property(x => x.Name).HasMaxLength(180).IsRequired();
+        beautyService.Property(x => x.Slug).HasMaxLength(200).IsRequired();
+        beautyService.Property(x => x.Description).HasMaxLength(5000);
+        beautyService.Property(x => x.Price).HasPrecision(18, 2);
+        beautyService.Property(x => x.ImageUrl).HasMaxLength(2048);
+
         var productImage = modelBuilder.Entity<ProductImage>();
         productImage.ToTable("product_images");
         productImage.HasKey(x => x.Id);
