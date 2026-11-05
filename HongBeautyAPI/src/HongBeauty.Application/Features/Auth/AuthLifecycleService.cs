@@ -32,7 +32,7 @@ public sealed class AuthLifecycleService(
         if (user is null || user.EmailVerified) return;
         var rawToken = NewToken();
         await actions.AddAsync(new AuthActionToken(user.Id, "verify-email", HashToken(rawToken),
-            DateTimeOffset.UtcNow.AddHours(24)), cancellationToken);
+            DateTimeOffset.UtcNow.AddHours(72)), cancellationToken);
         await notifications.SendVerificationAsync(user.Email, rawToken, cancellationToken);
     }
 

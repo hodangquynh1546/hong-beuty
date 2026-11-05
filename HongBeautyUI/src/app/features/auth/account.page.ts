@@ -27,7 +27,7 @@ import { AuthService, authErrorMessage } from '../../core/auth/auth.service';
         </div><div class="settings-column">
         @if (!user.emailVerified) {
           <div class="section">
-            <h2>Xác nhận email</h2>
+            <h2>✉ Xác nhận email</h2>
             <p>Gửi liên kết xác nhận tới địa chỉ email của bạn.</p>
             @if (verificationSent()) { <p class="success" role="status">Đã nhận yêu cầu. Vui lòng kiểm tra hộp thư.</p> }
             @if (verificationError()) { <p class="error" role="alert">{{ verificationError() }}</p> }
@@ -35,7 +35,7 @@ import { AuthService, authErrorMessage } from '../../core/auth/auth.service';
           </div>
         }
         <div class="section">
-          <h2>Đổi mật khẩu</h2>
+            <h2>🔒 Đổi mật khẩu</h2>
           <form #changeForm="ngForm" (ngSubmit)="changePassword(changeForm)" novalidate>
             <label for="currentPassword">Mật khẩu hiện tại</label>
             <input id="currentPassword" name="currentPassword" type="password" [(ngModel)]="currentPassword" required autocomplete="current-password" />

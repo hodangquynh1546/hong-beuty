@@ -103,6 +103,21 @@ public sealed class AuthTests
         Assert.NotNull(await auth.LoginAsync("user@example.com", "new password 12345", default));
     }
 
+    [Fact]
+    public async Task VerificationLink_RemainsValidForThreeDays()
+    {
+        var users = new MemoryUserStore();
+        var passwords = new Pbkdf2PasswordService();
+        var actions = new MemoryActionStore(users);
+        var auth = new AuthService(users, passwords);
+        var user = await auth.RegisterAsync("User", "verify@example.com", "original password 123", default);
+        var lifecycle = new AuthLifecycleService(users, actions, passwords, new CaptureNotifications());
+
+        await lifecycle.RequestVerificationAsync(user.Id, default);
+
+        Assert.InRange(actions.LastToken!.ExpiresAt, DateTimeOffset.UtcNow.AddHours(71), DateTimeOffset.UtcNow.AddHours(73));
+    }
+
     private sealed class CaptureNotifications : IAccountNotificationSender
     {
         public string? ResetToken { get; private set; }

@@ -9,9 +9,9 @@
     <a routerLink="/" fragment="about" (click)="menuOpen.set(false)">♡ Về chúng tôi</a>
   </nav>
   <div class="account-links" [class.open]="menuOpen()">
-    <a routerLink="/cart">Giỏ hàng</a>
-    @if (auth.user(); as user) { <a routerLink="/account/orders">Đơn hàng</a><a routerLink="/account/appointments">Lịch hẹn</a> @if (user.permissions.includes('catalog.write')) { <a routerLink="/admin/catalog">Sản phẩm</a><a routerLink="/admin/services">Quản trị dịch vụ</a><a routerLink="/admin/appointments">Quản trị lịch</a> } @if (user.permissions.includes('orders.manage')) { <a routerLink="/admin/orders">Quản trị đơn</a> } <a routerLink="/account">{{ user.fullName }}</a> }
-    @else { <a routerLink="/login">Đăng nhập</a><a class="contact-link" routerLink="/register">Đăng ký <span aria-hidden="true">↗</span></a> }
+    <a routerLink="/cart" (click)="menuOpen.set(false)">🛒 Giỏ hàng</a>
+    @if (auth.user(); as user) { <a routerLink="/account/orders" (click)="menuOpen.set(false)">Đơn hàng</a><a routerLink="/account/appointments" (click)="menuOpen.set(false)">Lịch hẹn</a> @if (user.permissions.includes('catalog.write')) { <a routerLink="/admin/catalog" (click)="menuOpen.set(false)">Sản phẩm</a><a routerLink="/admin/services" (click)="menuOpen.set(false)">Quản trị dịch vụ</a><a routerLink="/admin/appointments" (click)="menuOpen.set(false)">Quản trị lịch</a> } @if (user.permissions.includes('orders.manage')) { <a routerLink="/admin/orders" (click)="menuOpen.set(false)">Quản trị đơn</a> } <a routerLink="/account" (click)="menuOpen.set(false)">{{ user.fullName }}</a> }
+    @else { <a routerLink="/login" (click)="menuOpen.set(false)">Đăng nhập</a><a class="contact-link" routerLink="/register" (click)="menuOpen.set(false)">Đăng ký <span aria-hidden="true">↗</span></a> }
   </div>
 </header>
 <main><router-outlet /></main>

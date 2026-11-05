@@ -20,7 +20,7 @@ import { OrderApiService } from '../../core/api/order-api.service';
         <div class="message error" role="alert"><h1>Chưa tải được sản phẩm</h1><p>Vui lòng kiểm tra kết nối rồi thử lại.</p><button type="button" (click)="load()">Thử lại</button></div>
       } @else if (product(); as item) {
         <div class="detail">
-          <div class="visual">@if (item.imageUrl) { <img [src]="item.imageUrl" [alt]="item.name" /> } @else { <div class="visual-inner" aria-hidden="true">HONG<br />BEAUTY</div><span>HÌNH ẢNH ĐANG CẬP NHẬT</span> }</div>
+          <div class="visual">@if (item.imageUrl) { <img [src]="item.imageUrl" [alt]="item.name" /> } @else { <div class="visual-inner" aria-hidden="true">HONG<br />BEAUTY</div> }</div>
           <div class="info">
             <span class="eyebrow">HONG BEAUTY / SẢN PHẨM</span>
             <h1>{{ item.name }}</h1>

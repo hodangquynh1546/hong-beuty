@@ -8,7 +8,7 @@ import { BeautyService, ServiceApiService } from '../../core/api/service-api.ser
   imports: [RouterLink, ProductsPage],
   template: `
     <section class="hero">
-      <div class="hero-copy"><span class="eyebrow">HONG BEAUTY · EST. 2026</span><h1>Vẻ đẹp bắt đầu từ sự <em>thấu hiểu.</em></h1>
+      <div class="hero-copy"><span class="eyebrow">HONG BEAUTY</span><h1>Vẻ đẹp bắt đầu từ sự <em>thấu hiểu.</em></h1>
         <p>Một không gian dành cho bạn khám phá sản phẩm và dịch vụ chăm sóc sắc đẹp theo nhu cầu riêng.</p>
         <a class="primary" routerLink="/products">Khám phá sản phẩm <span aria-hidden="true">↗</span></a>
       </div>
