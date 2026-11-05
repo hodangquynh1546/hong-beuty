@@ -12,7 +12,7 @@ public sealed class PermissionHandler(IUserAccountStore users) : AuthorizationHa
     {
         var rawId = context.User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (!Guid.TryParse(rawId, out var id)) return;
-        var user = await users.FindByIdAsync(id, CancellationToken.None);
-        if (user?.HasPermission(requirement.Permission) == true) context.Succeed(requirement);
+        var permissions = await users.GetPermissionsAsync(id, CancellationToken.None);
+        if (permissions.Contains(requirement.Permission, StringComparer.Ordinal)) context.Succeed(requirement);
     }
 }

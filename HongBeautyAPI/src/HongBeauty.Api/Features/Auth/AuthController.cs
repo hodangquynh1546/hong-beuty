@@ -11,6 +11,7 @@ namespace HongBeauty.Api.Features.Auth;
 
 public sealed record RegisterRequest(string FullName, string Email, string Password);
 public sealed record LoginRequest(string Email, string Password);
+public sealed record UpdateProfileRequest(string FullName);
 
 public sealed class RegisterRequestValidator : AbstractValidator<RegisterRequest>
 {
@@ -88,6 +89,20 @@ public sealed class AuthController(
         var rawId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (!Guid.TryParse(rawId, out var id)) return Unauthorized();
         var user = await auth.GetByIdAsync(id, cancellationToken);
+        return user is null ? Unauthorized() : Ok(user);
+    }
+
+    [HttpPatch("profile")]
+    [Authorize]
+    public async Task<ActionResult<AuthUserDto>> UpdateProfile(UpdateProfileRequest request, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(request.FullName) || request.FullName.Trim().Length > 120)
+            return BadRequest(new ValidationProblemDetails(new Dictionary<string, string[]> {
+                ["fullName"] = ["Họ tên phải có từ 1 đến 120 ký tự."]
+            }));
+        var rawId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!Guid.TryParse(rawId, out var id)) return Unauthorized();
+        var user = await auth.UpdateProfileAsync(id, request.FullName, cancellationToken);
         return user is null ? Unauthorized() : Ok(user);
     }
 

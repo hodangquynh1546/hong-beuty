@@ -6,6 +6,7 @@ export interface AuthUser {
   id: string;
   fullName: string;
   email: string;
+  emailVerified: boolean;
   permissions: string[];
 }
 
@@ -49,6 +50,30 @@ export class AuthService {
   logout(): Observable<void> {
     return this.http.post<void>('/api/v1/auth/logout', {}, { withCredentials: true }).pipe(
       tap(() => { this.user.set(null); this.status.set('anonymous'); }),
+    );
+  }
+
+  clearSession(): void { this.user.set(null); this.status.set('anonymous'); }
+
+  requestVerification(): Observable<void> {
+    return this.http.post<void>('/api/v1/auth/verification/request', {}, { withCredentials: true });
+  }
+
+  confirmVerification(token: string): Observable<void> {
+    return this.http.post<void>('/api/v1/auth/verification/confirm', { token }, { withCredentials: true });
+  }
+
+  forgotPassword(email: string): Observable<void> {
+    return this.http.post<void>('/api/v1/auth/password/forgot', { email }, { withCredentials: true });
+  }
+
+  resetPassword(token: string, newPassword: string): Observable<void> {
+    return this.http.post<void>('/api/v1/auth/password/reset', { token, newPassword }, { withCredentials: true });
+  }
+
+  changePassword(currentPassword: string, newPassword: string): Observable<void> {
+    return this.http.post<void>('/api/v1/auth/password/change', { currentPassword, newPassword }, { withCredentials: true }).pipe(
+      tap(() => this.clearSession()),
     );
   }
 }

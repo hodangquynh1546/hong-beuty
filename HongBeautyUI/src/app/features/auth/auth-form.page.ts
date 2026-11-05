@@ -33,6 +33,7 @@ import { AuthService, authErrorMessage } from '../../core/auth/auth.service';
           @if (error()) { <div class="message error" role="alert">{{ error() }}</div> }
           <button type="submit" [disabled]="loading()">{{ loading() ? 'Đang xử lý…' : (isRegister ? 'Tạo tài khoản' : 'Đăng nhập') }}</button>
         </form>
+        @if (!isRegister) { <p class="recovery-link"><a routerLink="/forgot-password">Quên mật khẩu?</a></p> }
         <div class="switch">{{ isRegister ? 'Đã có tài khoản?' : 'Chưa có tài khoản?' }} <a [routerLink]="isRegister ? '/login' : '/register'">{{ isRegister ? 'Đăng nhập' : 'Đăng ký' }}</a></div>
       </div>
     </section>

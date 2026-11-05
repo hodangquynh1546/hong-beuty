@@ -25,4 +25,12 @@ public sealed class UserAccountStore(HongBeautyDbContext db) : IUserAccountStore
     }
 
     public Task SaveAsync(CancellationToken cancellationToken) => db.SaveChangesAsync(cancellationToken);
+
+    public async Task<string[]> GetPermissionsAsync(Guid userId, CancellationToken cancellationToken)
+    {
+        var role = await db.Users.Where(x => x.Id == userId).Select(x => x.Role).SingleOrDefaultAsync(cancellationToken);
+        if (role is null) return [];
+        return await db.RolePermissionGrants.Where(x => x.Role == role)
+            .OrderBy(x => x.Permission).Select(x => x.Permission).ToArrayAsync(cancellationToken);
+    }
 }

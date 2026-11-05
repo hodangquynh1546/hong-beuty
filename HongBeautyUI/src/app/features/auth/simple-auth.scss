@@ -1,0 +1,14 @@
+.simple-page { max-width: 620px; min-height: 65vh; padding: 5rem 5vw 8rem; margin: auto; }
+.eyebrow { letter-spacing: .2em; color: #a3746c; font-size: .7rem; font-weight: 700; }
+h1 { font-size: clamp(2.6rem, 5vw, 4rem); line-height: 1.15; margin: .8rem 0 1.2rem; }
+p { color: #786b66; line-height: 1.7; }
+form { display: flex; flex-direction: column; margin-top: 1.5rem; }
+label { font-size: .83rem; font-weight: 600; margin: 1rem 0 .5rem; }
+input { width: 100%; border: 1px solid #d7c6be; background: #fff; padding: .9rem 1rem; outline-color: #a77576; border-radius: 0; }
+small { color: #a33f42; margin-top: .35rem; }
+.notice { padding: 1rem 1.2rem; margin: 1.5rem 0; line-height: 1.6; }
+.error { background: #f8e2e1; color: #8a3032; }
+.success { background: #e7eee6; color: #3b6545; }
+button { margin-top: 1.5rem; border: 0; background: #342a2b; color: #fff; padding: 1rem 1.5rem; cursor: pointer; }
+button:disabled { opacity: .6; cursor: wait; }
+.back, .text-link { display: inline-block; color: #7f5250; text-underline-offset: .25rem; margin-top: 2rem; font-size: .9rem; }

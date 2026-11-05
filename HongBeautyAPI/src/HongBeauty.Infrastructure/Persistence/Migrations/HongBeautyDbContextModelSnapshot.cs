@@ -106,6 +106,35 @@ namespace HongBeauty.Infrastructure.Persistence.Migrations
                     b.ToTable("auth_action_tokens", (string)null);
                 });
 
+            modelBuilder.Entity("HongBeauty.Domain.Users.BootstrapMarker", b =>
+                {
+                    b.Property<string>("Key")
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Key");
+
+                    b.ToTable("bootstrap_markers", (string)null);
+                });
+
+            modelBuilder.Entity("HongBeauty.Domain.Users.RolePermissionGrant", b =>
+                {
+                    b.Property<string>("Role")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("Permission")
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)");
+
+                    b.HasKey("Role", "Permission");
+
+                    b.ToTable("role_permission_grants", (string)null);
+                });
+
             modelBuilder.Entity("HongBeauty.Domain.Users.UserAccount", b =>
                 {
                     b.Property<Guid>("Id")
@@ -138,9 +167,10 @@ namespace HongBeauty.Infrastructure.Persistence.Migrations
                         .HasMaxLength(512)
                         .HasColumnType("character varying(512)");
 
-                    b.PrimitiveCollection<string[]>("Permissions")
+                    b.Property<string>("Role")
                         .IsRequired()
-                        .HasColumnType("text[]");
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
 
                     b.Property<Guid>("SecurityStamp")
                         .HasColumnType("uuid");
@@ -150,7 +180,10 @@ namespace HongBeauty.Infrastructure.Persistence.Migrations
                     b.HasIndex("NormalizedEmail")
                         .IsUnique();
 
-                    b.ToTable("users", (string)null);
+                    b.ToTable("users", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_users_Role", "\"Role\" IN ('Admin', 'Staff', 'Customer')");
+                        });
                 });
 
             modelBuilder.Entity("HongBeauty.Domain.Users.AuthActionToken", b =>

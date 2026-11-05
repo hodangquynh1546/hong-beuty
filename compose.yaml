@@ -17,6 +17,15 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ConnectionStrings__Default: ${ConnectionStrings__Default:?set ConnectionStrings__Default}
+      AccountEmail__SmtpHost: ${AccountEmail__SmtpHost:-}
+      AccountEmail__SmtpPort: ${AccountEmail__SmtpPort:-587}
+      AccountEmail__From: ${AccountEmail__From:-}
+      AccountEmail__BaseUrl: ${AccountEmail__BaseUrl:-}
+      AccountEmail__SmtpUsername: ${AccountEmail__SmtpUsername:-}
+      AccountEmail__SmtpPassword: ${AccountEmail__SmtpPassword:-}
+      HONG_BEAUTY_BOOTSTRAP_ADMIN_EMAIL: ${HONG_BEAUTY_BOOTSTRAP_ADMIN_EMAIL:-}
+      HONG_BEAUTY_BOOTSTRAP_ADMIN_PASSWORD: ${HONG_BEAUTY_BOOTSTRAP_ADMIN_PASSWORD:-}
+      HONG_BEAUTY_BOOTSTRAP_ADMIN_FULL_NAME: ${HONG_BEAUTY_BOOTSTRAP_ADMIN_FULL_NAME:-}
     ports:
       - "8080:8080"
     depends_on:

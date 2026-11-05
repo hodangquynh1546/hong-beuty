@@ -25,6 +25,7 @@ public sealed class AuthTests
         var user = await auth.RegisterAsync("  Nguyễn A ", " Test@Example.com ", "a sufficiently long password", default);
         Assert.Equal("Nguyễn A", user.FullName);
         Assert.Empty(user.Permissions);
+        Assert.Equal(AccountRoles.Customer, user.Role);
         await Assert.ThrowsAsync<DuplicateEmailException>(() =>
             auth.RegisterAsync("Other", "test@example.com", "another long password", default));
         Assert.NotNull(await auth.LoginAsync("TEST@example.com", "a sufficiently long password", default));
@@ -45,6 +46,22 @@ public sealed class AuthTests
         Assert.NotEqual(before, (await users.FindByIdAsync(account.Id, default))!.SecurityStamp);
         Assert.Null(await auth.LoginAsync("user@example.com", "original password 123", default));
         Assert.NotNull(await auth.LoginAsync("user@example.com", "new password 12345", default));
+    }
+
+    [Fact]
+    public async Task RegistrationAlwaysCreatesCustomer_AndProfileUpdateChangesOnlyName()
+    {
+        var users = new MemoryUserStore();
+        var auth = new AuthService(users, new Pbkdf2PasswordService());
+        var registered = await auth.RegisterAsync("First Name", "role-test@example.com", "long password 123", default);
+        Assert.Equal(AccountRoles.Customer, registered.Role);
+        Assert.Empty(registered.Permissions);
+        var updated = await auth.UpdateProfileAsync(registered.Id, "  New Name  ", default);
+        Assert.NotNull(updated);
+        Assert.Equal("New Name", updated.FullName);
+        Assert.Equal(registered.Email, updated.Email);
+        Assert.Equal(AccountRoles.Customer, updated.Role);
+        Assert.Throws<ArgumentException>(() => UserAccount.CreateBootstrapAdmin("A", "a@example.com", "hash").ChangeFullName(" "));
     }
 
     [Fact]
@@ -117,5 +134,7 @@ public sealed class AuthTests
             return Task.CompletedTask;
         }
         public Task SaveAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+        public Task<string[]> GetPermissionsAsync(Guid userId, CancellationToken cancellationToken) =>
+            Task.FromResult(Array.Empty<string>());
     }
 }

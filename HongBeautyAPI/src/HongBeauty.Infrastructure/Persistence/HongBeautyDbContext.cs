@@ -9,6 +9,8 @@ public sealed class HongBeautyDbContext(DbContextOptions<HongBeautyDbContext> op
     public DbSet<Product> Products => Set<Product>();
     public DbSet<UserAccount> Users => Set<UserAccount>();
     public DbSet<AuthActionToken> AuthActionTokens => Set<AuthActionToken>();
+    public DbSet<RolePermissionGrant> RolePermissionGrants => Set<RolePermissionGrant>();
+    public DbSet<BootstrapMarker> BootstrapMarkers => Set<BootstrapMarker>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -31,8 +33,20 @@ public sealed class HongBeautyDbContext(DbContextOptions<HongBeautyDbContext> op
         user.Property(x => x.Email).HasMaxLength(254).IsRequired();
         user.Property(x => x.NormalizedEmail).HasMaxLength(254).IsRequired();
         user.Property(x => x.PasswordHash).HasMaxLength(512).IsRequired();
-        user.Property(x => x.Permissions).HasColumnType("text[]").IsRequired();
+        user.Property(x => x.Role).HasMaxLength(20).IsRequired();
         user.Property(x => x.SecurityStamp).IsRequired();
+        user.ToTable(table => table.HasCheckConstraint("CK_users_Role", "\"Role\" IN ('Admin', 'Staff', 'Customer')"));
+
+        var grant = modelBuilder.Entity<RolePermissionGrant>();
+        grant.ToTable("role_permission_grants");
+        grant.HasKey(x => new { x.Role, x.Permission });
+        grant.Property(x => x.Role).HasMaxLength(20).IsRequired();
+        grant.Property(x => x.Permission).HasMaxLength(80).IsRequired();
+
+        var marker = modelBuilder.Entity<BootstrapMarker>();
+        marker.ToTable("bootstrap_markers");
+        marker.HasKey(x => x.Key);
+        marker.Property(x => x.Key).HasMaxLength(80).IsRequired();
 
         var actionToken = modelBuilder.Entity<AuthActionToken>();
         actionToken.ToTable("auth_action_tokens");
