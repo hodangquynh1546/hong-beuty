@@ -1,11 +1,12 @@
 import { CurrencyPipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, DestroyRef, inject, signal } from '@angular/core';
+import { Component, DestroyRef, effect, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { Product, ProductApiService } from '../../core/api/product-api.service';
 import { DeliveryAddress, OrderApiService } from '../../core/api/order-api.service';
 import { AuthService } from '../../core/auth/auth.service';
+import { SavedProductsApiService } from '../../core/api/saved-products-api.service';
 
 @Component({
   selector: 'app-product-detail-page',
@@ -30,6 +31,8 @@ import { AuthService } from '../../core/auth/auth.service';
               @if (item.salePrice !== null && item.salePrice < item.price) { <del>{{ item.price | currency:'VND':'symbol':'1.0-0':'vi' }}</del> }
             </div>
             <p class="availability">{{ item.stock > 0 ? 'Còn hàng' : 'Hết hàng' }}</p>
+            <div class="social-counts"><span><span class="material-symbols-outlined" aria-hidden="true">favorite</span> {{ item.savedCount ?? 0 }} lượt lưu</span><span><span class="material-symbols-outlined" aria-hidden="true">shopping_bag</span> {{ item.purchaseCount ?? 0 }} đã mua</span></div>
+            @if (auth.user()?.role !== 'Admin') { <button class="save-button" type="button" [disabled]="favoriteBusy()" (click)="toggleSaved(item)"><span class="material-symbols-outlined" aria-hidden="true">{{ saved.ids().has(item.id) ? 'favorite' : 'favorite_border' }}</span> {{ saved.ids().has(item.id) ? 'Đã lưu' : 'Lưu sản phẩm' }}</button> }
             @if (auth.user()?.role !== 'Admin') { <div class="purchase-actions"><label for="quantity">Số lượng <input id="quantity" type="number" min="1" [max]="item.stock < 99 ? item.stock : 99" [value]="quantity()" (input)="setQuantity($event, item.stock)" /></label><button class="add-button" [class.added]="addedMotion()" type="button" [disabled]="item.stock === 0 || adding()" (click)="addToCart(item.id)"><span class="material-symbols-outlined" aria-hidden="true">shopping_bag</span> {{ adding() ? 'Đang thêm…' : 'Thêm vào giỏ hàng' }}</button><button type="button" [disabled]="item.stock === 0 || buying()" (click)="startBuyNow()"><span class="material-symbols-outlined" aria-hidden="true">bolt</span> Mua ngay</button></div> }
             @if (buyDialog()) { <div class="buy-panel"><h2>Mua ngay {{ quantity() }} sản phẩm</h2>@if (addresses().length) { <label>Địa chỉ nhận hàng <select [value]="addressId" (change)="addressId = $any($event.target).value">@for (address of addresses(); track address.id) { <option [value]="address.id">{{ address.recipient }} · {{ address.line1 }}, {{ address.ward }}</option> }</select></label><p>Tổng tạm tính: {{ (item.salePrice ?? item.price) * quantity() | currency:'VND':'symbol':'1.0-0':'vi' }} · Phí vận chuyển: 0 ₫</p><button type="button" [disabled]="buying() || !addressId" (click)="confirmBuyNow(item.id)">{{ buying() ? 'Đang tạo đơn…' : 'Xác nhận mua ngay' }}</button> } @else { <p>Thêm địa chỉ nhận hàng trước khi mua.</p><a routerLink="/account/addresses" [state]="{ returnUrl: '/products/' + item.id }">Thêm địa chỉ</a> }<button type="button" class="secondary" (click)="buyDialog.set(false)">Đóng</button></div> }
             @if (addedMotion()) { <span class="cart-spark" aria-hidden="true">✦</span> }
@@ -58,7 +61,7 @@ import { AuthService } from '../../core/auth/auth.service';
     .price strong { font-size: 1.5rem; font-weight: 600; }
     .price del { color: #9c8d87; }
     .availability { color: #6b655a; font-size: .85rem; border-bottom: 1px solid #e7d9d2; padding-bottom: 2rem; }
-    .description { margin-top: 2rem; }
+    .social-counts{display:flex;gap:1.25rem;margin:.5rem 0 1rem;color:#806e75;font-size:.82rem}.social-counts>span{display:flex;align-items:center;gap:.25rem}.social-counts .material-symbols-outlined{font-size:1.1rem}.save-button{background:#f5e9ed;color:#63384f;box-shadow:none;display:inline-flex;align-items:center;gap:.4rem;margin-bottom:1rem}.description { margin-top: 2rem; }
     .description h2 { font-size: 1.35rem; }
     .description p { color: #786b66; white-space: pre-line; line-height: 1.8; }
     .catalog-link { display: inline-flex; margin-top: 2rem; gap: 2rem; color: #654641; border-bottom: 1px solid; padding-bottom: .5rem; text-decoration: none; font-size: .9rem; }
@@ -77,6 +80,7 @@ import { AuthService } from '../../core/auth/auth.service';
 export class ProductDetailPage {
   private readonly api = inject(ProductApiService);
   private readonly orders = inject(OrderApiService);
+  readonly saved = inject(SavedProductsApiService);
   private readonly router = inject(Router);
   readonly auth = inject(AuthService);
   private readonly route = inject(ActivatedRoute);
@@ -92,6 +96,17 @@ export class ProductDetailPage {
   readonly cartError = signal('');
   readonly quantity = signal(1);
   readonly addedMotion = signal(false);
+  readonly favoriteBusy = signal(false);
+
+  toggleSaved(item: Product): void {
+    if (!this.auth.user()) { this.cartError.set('Vui lòng đăng nhập để lưu sản phẩm.'); return; }
+    if (this.favoriteBusy()) return;
+    this.favoriteBusy.set(true); this.cartError.set('');
+    const wasSaved = this.saved.ids().has(item.id);
+    const request = wasSaved ? this.saved.remove(item.id) : this.saved.save(item.id);
+    request.subscribe({ next: () => { this.favoriteBusy.set(false); this.product.update(current => current ? { ...current, savedCount: Math.max(0, (current.savedCount ?? 0) + (wasSaved ? -1 : 1)) } : current); },
+      error: () => { this.favoriteBusy.set(false); this.cartError.set('Không cập nhật được sản phẩm đã lưu.'); } });
+  }
   readonly buyDialog = signal(false);
   readonly buying = signal(false);
   readonly addresses = signal<DeliveryAddress[]>([]);
@@ -133,6 +148,7 @@ export class ProductDetailPage {
   }
 
   constructor() {
+    effect(() => { if (this.auth.user() && this.auth.user()?.role !== 'Admin') this.saved.load().subscribe(); });
     this.route.paramMap.subscribe(params => { this.id = params.get('id') ?? ''; this.load(); });
     this.destroyRef.onDestroy(() => this.request?.unsubscribe());
   }

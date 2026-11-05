@@ -11,6 +11,8 @@ export interface Product {
   costPrice?: number;
   salePrice: number | null;
   stock: number;
+  savedCount?: number;
+  purchaseCount?: number;
   categoryId?: string | null;
   imageUrl?: string | null;
   isActive?: boolean;

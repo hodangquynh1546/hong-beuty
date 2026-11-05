@@ -12,6 +12,7 @@ public sealed class HongBeautyDbContext(DbContextOptions<HongBeautyDbContext> op
 {
     public DbSet<Product> Products => Set<Product>();
     public DbSet<ProductImage> ProductImages => Set<ProductImage>();
+    public DbSet<SavedProduct> SavedProducts => Set<SavedProduct>();
     public DbSet<BeautyService> BeautyServices => Set<BeautyService>();
     public DbSet<BeautyAppointment> BeautyAppointments => Set<BeautyAppointment>();
     public DbSet<ShopExpense> ShopExpenses => Set<ShopExpense>();
@@ -63,6 +64,13 @@ public sealed class HongBeautyDbContext(DbContextOptions<HongBeautyDbContext> op
         beautyService.Property(x => x.Description).HasMaxLength(5000);
         beautyService.Property(x => x.Price).HasPrecision(18, 2);
         beautyService.Property(x => x.ImageUrl).HasMaxLength(2048);
+
+        var savedProduct = modelBuilder.Entity<SavedProduct>();
+        savedProduct.ToTable("saved_products");
+        savedProduct.HasKey(x => new { x.UserId, x.ProductId });
+        savedProduct.HasIndex(x => x.ProductId);
+        savedProduct.HasOne<UserAccount>().WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
+        savedProduct.HasOne<Product>().WithMany().HasForeignKey(x => x.ProductId).OnDelete(DeleteBehavior.Cascade);
 
         var productImage = modelBuilder.Entity<ProductImage>();
         productImage.ToTable("product_images");
@@ -161,6 +169,7 @@ public sealed class HongBeautyDbContext(DbContextOptions<HongBeautyDbContext> op
         var item = modelBuilder.Entity<CustomerOrderItem>();
         item.ToTable("order_items", t => t.HasCheckConstraint("CK_order_items_Quantity_Price", "\"Quantity\" > 0 AND \"UnitPrice\" >= 0"));
         item.HasKey(x => x.Id);
+        item.HasIndex(x => x.ProductId);
         item.Property(x => x.ProductName).HasMaxLength(180).IsRequired();
         item.Property(x => x.ImageUrl).HasMaxLength(2048);
         item.Property(x => x.UnitPrice).HasPrecision(18, 2);

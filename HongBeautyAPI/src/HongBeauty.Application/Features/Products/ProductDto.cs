@@ -1,9 +1,9 @@
 namespace HongBeauty.Application.Features.Products;
 
 public sealed record ProductDto(Guid Id, string Name, string Slug, string Description, decimal Price,
-    decimal? SalePrice, int Stock, Guid? CategoryId, bool IsActive, string? ImageUrl);
+    decimal? SalePrice, int Stock, Guid? CategoryId, bool IsActive, string? ImageUrl, int SavedCount = 0, int PurchaseCount = 0);
 public sealed record AdminProductDto(Guid Id, string Name, string Slug, string Description, decimal Price,
-    decimal? SalePrice, decimal CostPrice, int Stock, Guid? CategoryId, bool IsActive, string? ImageUrl);
+    decimal? SalePrice, decimal CostPrice, int Stock, Guid? CategoryId, bool IsActive, string? ImageUrl, int SavedCount = 0, int PurchaseCount = 0);
 
 public sealed record CategoryDto(Guid Id, string Name, string Slug, string Description, bool IsActive);
 

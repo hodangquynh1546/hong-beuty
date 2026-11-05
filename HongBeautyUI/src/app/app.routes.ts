@@ -15,10 +15,12 @@ import { ServicesAdminPage } from './features/admin/services-admin.page';
 import { AppointmentsPage } from './features/services/appointments.page';
 import { ReportsPage } from './features/admin/reports.page';
 import { SupportAdminPage } from './features/admin/support-admin.page';
+import { SavedProductsPage } from './features/products/saved-products.page';
 
 export const routes: Routes = [
   { path: '', component: HomePage, title: 'Hong Beauty | Vẻ đẹp theo cách riêng' },
   { path: 'products', component: ProductsPage, title: 'Sản phẩm | Hong Beauty' },
+  { path: 'account/saved-products', component: SavedProductsPage, title: 'Sản phẩm đã lưu | Hong Beauty' },
   { path: 'services', component: ServicesPage, title: 'Dịch vụ | Hong Beauty' },
   { path: 'account/appointments', component: AppointmentsPage, title: 'Lịch hẹn | Hong Beauty' },
   { path: 'products/:id', component: ProductDetailPage, title: 'Chi tiết sản phẩm | Hong Beauty' },

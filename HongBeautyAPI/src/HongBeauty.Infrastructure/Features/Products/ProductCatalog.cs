@@ -111,13 +111,19 @@ public sealed class ProductCatalog(HongBeautyDbContext database) : IProductCatal
         }
     }
 
-    private static IQueryable<ProductDto> ProjectProducts(IQueryable<Product> query) =>
+    private IQueryable<ProductDto> ProjectProducts(IQueryable<Product> query) =>
         query.Select(x => new ProductDto(x.Id, x.Name, x.Slug, x.Description, x.Price,
-        x.SalePrice, x.Stock, x.CategoryId, x.IsActive, x.ImageUrl));
+        x.SalePrice, x.Stock, x.CategoryId, x.IsActive, x.ImageUrl,
+        database.SavedProducts.Count(s => s.ProductId == x.Id),
+        database.OrderItems.Where(i => i.ProductId == x.Id && database.Orders.Any(o => o.Id == i.OrderId && o.PaymentStatus == "Paid"))
+            .Sum(i => (int?)i.Quantity) ?? 0));
 
-    private static IQueryable<AdminProductDto> ProjectAdminProducts(IQueryable<Product> query) =>
+    private IQueryable<AdminProductDto> ProjectAdminProducts(IQueryable<Product> query) =>
         query.Select(x => new AdminProductDto(x.Id, x.Name, x.Slug, x.Description, x.Price,
-            x.SalePrice, x.CostPrice, x.Stock, x.CategoryId, x.IsActive, x.ImageUrl));
+            x.SalePrice, x.CostPrice, x.Stock, x.CategoryId, x.IsActive, x.ImageUrl,
+            database.SavedProducts.Count(s => s.ProductId == x.Id),
+            database.OrderItems.Where(i => i.ProductId == x.Id && database.Orders.Any(o => o.Id == i.OrderId && o.PaymentStatus == "Paid"))
+                .Sum(i => (int?)i.Quantity) ?? 0));
 
     private static IQueryable<CategoryDto> ProjectCategories(IQueryable<Category> query) =>
         query.Select(x => new CategoryDto(x.Id, x.Name, x.Slug, x.Description, x.IsActive));

@@ -325,6 +325,24 @@ namespace HongBeauty.Infrastructure.Persistence.Migrations
                     b.ToTable("product_images", (string)null);
                 });
 
+            modelBuilder.Entity("HongBeauty.Domain.Products.SavedProduct", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("UserId", "ProductId");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("saved_products", (string)null);
+                });
+
             modelBuilder.Entity("HongBeauty.Domain.Reports.ShopExpense", b =>
                 {
                     b.Property<Guid>("Id")
@@ -656,6 +674,21 @@ namespace HongBeauty.Infrastructure.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("HongBeauty.Domain.Products.SavedProduct", b =>
+                {
+                    b.HasOne("HongBeauty.Domain.Products.Product", null)
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("HongBeauty.Domain.Users.UserAccount", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("HongBeauty.Domain.Services.BeautyAppointment", b =>

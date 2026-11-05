@@ -1,8 +1,10 @@
-import { Component, inject, OnInit, signal, DestroyRef } from '@angular/core';
+import { Component, inject, OnInit, signal, DestroyRef, effect } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { Category, Product, ProductApiService } from '../../core/api/product-api.service';
 import { RouterLink } from '@angular/router';
+import { AuthService } from '../../core/auth/auth.service';
+import { SavedProductsApiService } from '../../core/api/saved-products-api.service';
 
 @Component({
   selector: 'app-products-page',
@@ -14,7 +16,7 @@ import { RouterLink } from '@angular/router';
     @if (loading()) { <div class="message" role="status">Đang tải sản phẩm…</div> }
     @else if (error()) { <div class="message error" role="alert">Không tải được sản phẩm. <button (click)="load(term.value, category.value)">Thử lại</button></div> }
     @else if (products().length === 0) { <div class="message">Chưa có sản phẩm phù hợp.</div> }
-    @else { <div class="grid">@for (product of products(); track product.id) { <article><a class="product-link" [routerLink]="['/products', product.id]" [attr.aria-label]="'Xem chi tiết ' + product.name"><div class="tile">@if (product.imageUrl) { <img [src]="product.imageUrl" [alt]="product.name" loading="lazy" /> } @else { <span aria-hidden="true">HONG BEAUTY</span> }</div><h2>{{ product.name }}</h2></a><p>{{ product.description }}</p><strong>{{ (product.salePrice ?? product.price) | currency:'VND':'symbol':'1.0-0':'vi' }}</strong></article> }</div> }
+    @else { <div class="grid">@for (product of products(); track product.id) { <article><a class="product-link" [routerLink]="['/products', product.id]" [attr.aria-label]="'Xem chi tiết ' + product.name"><div class="tile">@if (product.imageUrl) { <img [src]="product.imageUrl" [alt]="product.name" loading="lazy" /> } @else { <span aria-hidden="true">HONG BEAUTY</span> }</div><h2>{{ product.name }}</h2></a><p>{{ product.description }}</p><strong>{{ (product.salePrice ?? product.price) | currency:'VND':'symbol':'1.0-0':'vi' }}</strong><div class="social"><span><span class="material-symbols-outlined">favorite</span> {{ product.savedCount ?? 0 }}</span><span><span class="material-symbols-outlined">shopping_bag</span> {{ product.purchaseCount ?? 0 }}</span></div>@if (auth.user()?.role !== 'Admin') { @if (auth.user()) { <button class="save" type="button" [disabled]="favoriteBusy() === product.id" (click)="toggleSaved(product)"><span class="material-symbols-outlined">{{ saved.ids().has(product.id) ? 'favorite' : 'favorite_border' }}</span> {{ saved.ids().has(product.id) ? 'Đã lưu' : 'Lưu' }}</button> } @else { <a class="save" routerLink="/login"><span class="material-symbols-outlined">favorite_border</span> Lưu</a> } }</article> }</div> }
   </section>`,
   styles: [`
     .page { max-width: 1320px; margin: auto; padding: 5rem 4vw 8rem; min-height: 65vh; }
@@ -32,7 +34,7 @@ import { RouterLink } from '@angular/router';
     article:hover { transform: translateY(-6px); box-shadow: 0 20px 38px #3d283324; }
     article h2,article p,article strong { margin-left: 1rem; margin-right: 1rem; }
     article h2 { font-size: 1.4rem; }
-    .product-link { color: inherit; text-decoration: none; display: block; }
+    .social{display:flex;gap:1rem;margin:.5rem 1rem;color:#806f76;font-size:.8rem}.social span{display:inline-flex;align-items:center;gap:.2rem}.social .material-symbols-outlined{font-size:1rem}.save{display:inline-flex;align-items:center;gap:.3rem;margin:.2rem 1rem;border-radius:6px;background:#f4e9ed;color:#63384f;padding:.4rem .7rem;font-size:.75rem;text-decoration:none}.save .material-symbols-outlined{font-size:1rem}.product-link { color: inherit; text-decoration: none; display: block; }
     .product-link:hover h2, .product-link:focus-visible h2 { color: #a3746c; }
     .tile { aspect-ratio: 1; display: grid; place-items: center; background: linear-gradient(145deg,#eadbd3,#b68f88); color: #fff; letter-spacing: .13em; font-size: .7rem; text-align: center; overflow: hidden; }
     .tile img { width: 100%; height: 100%; object-fit: cover; transition: transform .55s; }
@@ -42,6 +44,9 @@ import { RouterLink } from '@angular/router';
 })
 export class ProductsPage implements OnInit {
   private readonly api = inject(ProductApiService);
+  readonly auth = inject(AuthService);
+  readonly saved = inject(SavedProductsApiService);
+  readonly favoriteBusy = signal<string | null>(null);
   private readonly destroyRef = inject(DestroyRef);
   private request?: Subscription;
   private searchTimer?: ReturnType<typeof setTimeout>;
@@ -49,7 +54,7 @@ export class ProductsPage implements OnInit {
   readonly error = signal(false);
   readonly products = signal<Product[]>([]);
   readonly categories = signal<Category[]>([]);
-  constructor() { this.destroyRef.onDestroy(() => { this.request?.unsubscribe(); if (this.searchTimer) clearTimeout(this.searchTimer); }); }
+  constructor() { effect(() => { if (this.auth.user() && this.auth.user()?.role !== 'Admin') this.saved.load().subscribe(); }); this.destroyRef.onDestroy(() => { this.request?.unsubscribe(); if (this.searchTimer) clearTimeout(this.searchTimer); }); }
   ngOnInit(): void {
     this.api.categories().subscribe({ next: categories => this.categories.set(categories) });
     this.load('', '');
@@ -60,6 +65,16 @@ export class ProductsPage implements OnInit {
     this.request = this.api.list(search, categoryId).subscribe({
       next: products => { this.products.set(products); this.loading.set(false); },
       error: () => { this.error.set(true); this.loading.set(false); },
+    });
+  }
+  toggleSaved(product: Product): void {
+    if (!this.auth.user()) { return; }
+    if (this.favoriteBusy()) return;
+    const wasSaved = this.saved.ids().has(product.id);
+    this.favoriteBusy.set(product.id);
+    (wasSaved ? this.saved.remove(product.id) : this.saved.save(product.id)).subscribe({
+      next: () => { this.favoriteBusy.set(null); this.products.update(rows => rows.map(row => row.id === product.id ? { ...row, savedCount: Math.max(0, (row.savedCount ?? 0) + (wasSaved ? -1 : 1)) } : row)); },
+      error: () => this.favoriteBusy.set(null),
     });
   }
   queueSearch(search: string, categoryId: string): void {
