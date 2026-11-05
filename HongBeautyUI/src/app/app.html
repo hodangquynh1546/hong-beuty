@@ -1,11 +1,11 @@
-<div class="announcement">Chăm sóc vẻ đẹp theo cách riêng của bạn</div>
+<div class="announcement">HONG BEAUTY <span aria-hidden="true">✦</span> CHĂM SÓC THEO CÁCH RIÊNG CỦA BẠN</div>
 <header class="site-header">
   <a class="wordmark" routerLink="/" aria-label="Hong Beauty, về trang chủ">HONG<span>BEAUTY</span></a>
   <nav aria-label="Điều hướng chính">
     <a routerLink="/">Trang chủ</a>
     <a routerLink="/products">Sản phẩm</a>
-    <a href="#services">Dịch vụ</a>
-    <a href="#about">Về chúng tôi</a>
+    <a routerLink="/" fragment="services">Khám phá</a>
+    <a routerLink="/" fragment="about">Về chúng tôi</a>
   </nav>
   <div class="account-links">
     <a routerLink="/cart">Giỏ hàng</a>
@@ -16,7 +16,7 @@
 <main><router-outlet /></main>
 <footer>
   <div><strong>HONG BEAUTY</strong><p>Vẻ đẹp được nuôi dưỡng bằng sự thấu hiểu.</p></div>
-  <div><span>Khám phá</span><a routerLink="/products">Sản phẩm</a><a href="#services">Dịch vụ</a></div>
-  <div><span>Thông tin</span><a href="#about">Về chúng tôi</a><a href="#contact">Liên hệ</a><a routerLink="/account">Tài khoản</a></div>
-  <small>© 2026 Hong Beauty. Nội dung đang được hoàn thiện.</small>
+  <div><span>Khám phá</span><a routerLink="/products">Sản phẩm</a><a routerLink="/" fragment="services">Cảm hứng làm đẹp</a><a routerLink="/cart">Giỏ hàng</a></div>
+  <div><span>Thông tin</span><a routerLink="/" fragment="about">Về chúng tôi</a><a routerLink="/account">Tài khoản</a><a routerLink="/account/orders">Đơn hàng</a></div>
+  <small>© 2026 Hong Beauty. Chăm sóc vẻ đẹp theo cách riêng của bạn.</small>
 </footer>

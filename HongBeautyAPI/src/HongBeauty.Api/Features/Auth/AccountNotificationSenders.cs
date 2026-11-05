@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Mail;
 using System.Text;
+using System.Net.Http.Json;
 using HongBeauty.Application.Features.Auth;
 
 namespace HongBeauty.Api.Features.Auth;
@@ -54,7 +55,7 @@ public sealed class SmtpAccountNotificationSender(IConfiguration configuration) 
     {
         var host = configuration["AccountEmail:SmtpHost"];
         var from = configuration["AccountEmail:From"];
-        var baseUrl = configuration["AccountEmail:BaseUrl"];
+        var baseUrl = configuration["AccountEmail:BaseUrl"] ?? Environment.GetEnvironmentVariable("RENDER_EXTERNAL_URL");
         if (string.IsNullOrWhiteSpace(host) || string.IsNullOrWhiteSpace(from) ||
             !Uri.TryCreate(baseUrl, UriKind.Absolute, out var uri) || uri.Scheme != Uri.UriSchemeHttps)
             throw new NotificationNotConfiguredException();
@@ -69,6 +70,43 @@ public sealed class SmtpAccountNotificationSender(IConfiguration configuration) 
             Subject = subject,
             Body = $"Mở liên kết để tiếp tục: {baseUrl!.TrimEnd('/')}/{path}?token={Uri.EscapeDataString(token)}"
         };
-        await client.SendMailAsync(message, cancellationToken);
+        try { await client.SendMailAsync(message, cancellationToken); }
+        catch (SmtpException) { throw new NotificationDeliveryException(); }
+    }
+}
+
+public sealed class BrevoAccountNotificationSender(HttpClient client, IConfiguration configuration) : IAccountNotificationSender
+{
+    public Task SendVerificationAsync(string email, string token, CancellationToken cancellationToken) =>
+        SendAsync(email, "Xác nhận email Hong Beauty", "verify-email", token, cancellationToken);
+
+    public Task SendPasswordResetAsync(string email, string token, CancellationToken cancellationToken) =>
+        SendAsync(email, "Đặt lại mật khẩu Hong Beauty", "reset-password", token, cancellationToken);
+
+    private async Task SendAsync(string email, string subject, string path, string token, CancellationToken ct)
+    {
+        var key = configuration["AccountEmail:BrevoApiKey"];
+        var from = configuration["AccountEmail:From"];
+        var baseUrl = configuration["AccountEmail:BaseUrl"] ?? Environment.GetEnvironmentVariable("RENDER_EXTERNAL_URL");
+        if (string.IsNullOrWhiteSpace(key) || string.IsNullOrWhiteSpace(from) ||
+            !Uri.TryCreate(baseUrl, UriKind.Absolute, out var uri) || uri.Scheme != Uri.UriSchemeHttps)
+            throw new NotificationNotConfiguredException();
+
+        var link = $"{baseUrl!.TrimEnd('/')}/{path}?token={Uri.EscapeDataString(token)}";
+        using var request = new HttpRequestMessage(HttpMethod.Post, "https://api.brevo.com/v3/smtp/email");
+        request.Headers.Add("api-key", key);
+        request.Content = JsonContent.Create(new
+        {
+            sender = new { name = "Hong Beauty", email = from },
+            to = new[] { new { email } },
+            subject,
+            textContent = $"Mở liên kết để tiếp tục: {link}"
+        });
+        try
+        {
+            using var response = await client.SendAsync(request, ct);
+            if (!response.IsSuccessStatusCode) throw new NotificationDeliveryException();
+        }
+        catch (HttpRequestException) { throw new NotificationDeliveryException(); }
     }
 }

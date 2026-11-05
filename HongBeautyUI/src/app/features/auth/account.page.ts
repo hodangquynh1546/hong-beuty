@@ -18,6 +18,7 @@ import { AuthService, authErrorMessage } from '../../core/auth/auth.service';
         <div class="card">
           <span class="label">HỌ VÀ TÊN</span><strong>{{ user.fullName }}</strong>
           <span class="label">EMAIL</span><span>{{ user.email }}</span>
+          <span class="label">VAI TRÒ</span><span>{{ user.role === 'Admin' ? 'Quản trị viên' : user.role === 'Staff' ? 'Nhân viên' : 'Khách hàng' }}</span>
           <span class="label">XÁC NHẬN EMAIL</span><span>{{ user.emailVerified ? 'Đã xác nhận' : 'Chưa xác nhận' }}</span>
         </div>
         @if (!user.emailVerified) {
@@ -93,7 +94,9 @@ export class AccountPage {
     this.verificationError.set('');
     this.auth.requestVerification().subscribe({
       next: () => { this.verificationBusy.set(false); this.verificationSent.set(true); },
-      error: error => { this.verificationBusy.set(false); this.verificationError.set(authErrorMessage(error, 'Chưa gửi được liên kết. Vui lòng thử lại.')); },
+      error: error => { this.verificationBusy.set(false); this.verificationError.set(error instanceof HttpErrorResponse && error.status === 503
+        ? 'Dịch vụ gửi email của cửa hàng chưa sẵn sàng. Vui lòng thử lại sau khi quản trị viên cấu hình email.'
+        : authErrorMessage(error, 'Chưa gửi được liên kết. Vui lòng thử lại.')); },
     });
   }
 

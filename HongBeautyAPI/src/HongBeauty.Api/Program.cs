@@ -60,6 +60,8 @@ builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<AuthLifecycleService>();
 if (builder.Environment.IsDevelopment())
     builder.Services.AddSingleton<IAccountNotificationSender, DevelopmentOutboxNotificationSender>();
+else if (!string.IsNullOrWhiteSpace(builder.Configuration["AccountEmail:BrevoApiKey"]))
+    builder.Services.AddHttpClient<IAccountNotificationSender, BrevoAccountNotificationSender>();
 else
     builder.Services.AddSingleton<IAccountNotificationSender, SmtpAccountNotificationSender>();
 builder.Services.AddScoped<IValidator<RegisterRequest>, RegisterRequestValidator>();

@@ -18,6 +18,7 @@ public interface IAccountNotificationSender
 }
 
 public sealed class NotificationNotConfiguredException : Exception;
+public sealed class NotificationDeliveryException : Exception;
 
 public sealed class AuthLifecycleService(
     IUserAccountStore users,

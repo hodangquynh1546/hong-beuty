@@ -61,7 +61,7 @@ export class AuthFormPage {
       ? this.auth.register({ fullName: this.fullName.trim(), email: this.email.trim(), password: this.password })
       : this.auth.login({ email: this.email.trim(), password: this.password });
     request.subscribe({
-      next: () => { this.loading.set(false); void this.router.navigateByUrl('/account'); },
+      next: user => { this.loading.set(false); void this.router.navigateByUrl(user.permissions.includes('catalog.write') ? '/admin/catalog' : '/account'); },
       error: error => {
         this.loading.set(false);
         this.error.set(authErrorMessage(error, this.isRegister ? 'Không thể tạo tài khoản. Vui lòng kiểm tra thông tin và thử lại.' : 'Email hoặc mật khẩu không đúng.'));

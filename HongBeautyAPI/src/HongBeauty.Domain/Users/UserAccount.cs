@@ -43,6 +43,12 @@ public sealed class UserAccount
 
     public void VerifyEmail() => EmailVerified = true;
 
+    public void PromoteToAdmin(string passwordHash)
+    {
+        Role = AccountRoles.Admin;
+        ChangePassword(passwordHash);
+    }
+
     public void ChangePassword(string passwordHash)
     {
         PasswordHash = passwordHash;

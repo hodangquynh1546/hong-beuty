@@ -19,6 +19,23 @@ public sealed class AuthTests
     }
 
     [Fact]
+    public void OwnerPromotion_GrantsAdmin_AndInvalidatesPreviousCredentials()
+    {
+        var passwords = new Pbkdf2PasswordService();
+        var oldPassword = "original password 123";
+        var newPassword = "new bootstrap password 123";
+        var account = new UserAccount("Owner", "owner@example.com", passwords.Hash(oldPassword));
+        var oldStamp = account.SecurityStamp;
+
+        account.PromoteToAdmin(passwords.Hash(newPassword));
+
+        Assert.Equal(AccountRoles.Admin, account.Role);
+        Assert.NotEqual(oldStamp, account.SecurityStamp);
+        Assert.False(passwords.Verify(oldPassword, account.PasswordHash));
+        Assert.True(passwords.Verify(newPassword, account.PasswordHash));
+    }
+
+    [Fact]
     public async Task Register_DoesNotAssignPermissions_AndRejectsDuplicateEmail()
     {
         var auth = new AuthService(new MemoryUserStore(), new Pbkdf2PasswordService());

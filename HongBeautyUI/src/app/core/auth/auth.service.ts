@@ -7,6 +7,7 @@ export interface AuthUser {
   fullName: string;
   email: string;
   emailVerified: boolean;
+  role: 'Admin' | 'Staff' | 'Customer';
   permissions: string[];
 }
 
@@ -81,6 +82,7 @@ export class AuthService {
 export function authErrorMessage(error: unknown, fallback: string): string {
   if (!(error instanceof HttpErrorResponse)) return fallback;
   if (error.status === 0) return 'Không kết nối được máy chủ. Vui lòng thử lại sau.';
+  if (error.status === 503 && typeof error.error?.title === 'string') return error.error.title;
   if (error.status >= 500) return 'Máy chủ đang gặp sự cố. Vui lòng thử lại sau.';
   if (error.status === 429) return 'Bạn đã thử quá nhiều lần. Vui lòng đợi một chút rồi thử lại.';
   if (error.status === 400 || error.status === 422) return 'Thông tin chưa hợp lệ. Vui lòng kiểm tra và thử lại.';

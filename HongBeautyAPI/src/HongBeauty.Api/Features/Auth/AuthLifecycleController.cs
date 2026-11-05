@@ -28,7 +28,8 @@ public sealed class AuthLifecycleController(AuthLifecycleService lifecycle, ILog
             await lifecycle.RequestVerificationAsync(CurrentUserId(), cancellationToken);
             return Accepted();
         }
-        catch (NotificationNotConfiguredException) { return StatusCode(503); }
+        catch (NotificationNotConfiguredException) { return StatusCode(503, new ProblemDetails { Title = "Dịch vụ gửi email chưa được cấu hình." }); }
+        catch (NotificationDeliveryException) { return StatusCode(503, new ProblemDetails { Title = "Chưa gửi được email. Vui lòng thử lại sau." }); }
     }
 
     [HttpPost("verification/confirm")]
@@ -52,6 +53,11 @@ public sealed class AuthLifecycleController(AuthLifecycleService lifecycle, ILog
         catch (NotificationNotConfiguredException)
         {
             logger.LogError("Password reset notification is not configured.");
+            return Accepted();
+        }
+        catch (NotificationDeliveryException)
+        {
+            logger.LogError("Password reset notification delivery failed.");
             return Accepted();
         }
     }

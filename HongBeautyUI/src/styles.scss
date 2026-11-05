@@ -1,8 +1,20 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600&display=swap');
-:root { font-family: 'DM Sans', sans-serif; color: #332b2b; background: #fcf9f6; font-synthesis: none; }
+:root { font-family: 'DM Sans', sans-serif; color: #352b31; background: #fbf7f3; font-synthesis: none; --ink:#352b31; --plum:#3d2833; --rose:#a66c75; --cream:#fbf7f3; --line:#e8dad7; }
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 body { margin: 0; }
 button, input { font: inherit; }
 h1, h2, h3 { font-family: 'Playfair Display', serif; font-weight: 500; }
 a { cursor: pointer; }
+button,a,input,select{transition:background-color .25s,color .25s,border-color .25s,box-shadow .25s,transform .25s}
+button:hover:not(:disabled){transform:translateY(-2px)}
+:focus-visible{outline:3px solid #bc7e80;outline-offset:3px}
+::selection{background:#e8c6be;color:#352b31}
+body .admin-page .editor,body .admin-page .list-panel,body .commerce-page .items,body .commerce-page .summary,body .account-page .card,body .orders-page article,body .addresses-page article{border-radius:8px;box-shadow:0 12px 32px #3d28330d;border-color:#eadedb}
+body .admin-page input:not([type=checkbox]),body .admin-page select,body .admin-page textarea,body .addresses-page input,body .account-page input{border-radius:4px}
+body .admin-page .form-actions button,body .admin-page .item-actions button,body .addresses-page form button,body .commerce-page .primary,body .orders-page button,body .account-page button{border-radius:4px}
+body .admin-page .form-actions .primary,body .addresses-page form button,body .commerce-page .primary,body .orders-page button,body .account-page button{background:#3d2833;box-shadow:0 10px 24px #3d283326}
+body .admin-page .form-actions .primary:hover:not(:disabled),body .addresses-page form button:hover:not(:disabled),body .commerce-page .primary:hover:not(:disabled),body .orders-page button:hover:not(:disabled),body .account-page button:hover:not(:disabled){background:#74485a}
+body .account-page,body .orders-page,body .addresses-page,body .commerce-page{animation:page-enter .45s ease both}
+@keyframes page-enter{from{opacity:.65;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}

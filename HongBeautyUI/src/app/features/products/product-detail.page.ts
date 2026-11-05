@@ -44,7 +44,7 @@ import { OrderApiService } from '../../core/api/order-api.service';
     .back { color: #7c625d; font-size: .82rem; text-decoration: none; display: inline-flex; gap: .5rem; margin-bottom: 2.5rem; }
     .back:hover, .catalog-link:hover { color: #a3746c; }
     .detail { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); gap: clamp(3rem, 7vw, 8rem); align-items: center; }
-    .visual { min-height: 570px; background: linear-gradient(145deg, #eadbd3, #c49d91); display: grid; place-items: center; position: relative; overflow: hidden; }
+    .visual { min-height: 570px; background: linear-gradient(145deg, #eadbd3, #c49d91); display: grid; place-items: center; position: relative; overflow: hidden; border-radius: 7px; box-shadow: 0 20px 40px #3d28331a; }
     .visual img { width: 100%; height: 100%; max-height: 650px; object-fit: cover; }
     .visual:before { content: ''; position: absolute; inset: 5%; border: 1px solid #fff9; }
     .visual-inner { width: 60%; aspect-ratio: .8; border-radius: 50% 50% 0 0; display: grid; place-items: center; text-align: center; font-family: 'Playfair Display', serif; font-size: clamp(2rem, 4vw, 4rem); letter-spacing: .15em; color: #fff9; background: linear-gradient(130deg, #b58a82, #e9cabc); box-shadow: 25px 30px 60px #8c635760; }
@@ -64,7 +64,8 @@ import { OrderApiService } from '../../core/api/order-api.service';
     .message p { color: #6f605a; }
     .message a { color: #654641; }
     .error { background: #f8e2e1; }
-    button { border: 0; background: #332b2b; color: #fff; padding: .7rem 1rem; cursor: pointer; }
+    button { border: 0; background: #3d2833; color: #fff; padding: 1rem 1.5rem; cursor: pointer; border-radius: 4px; box-shadow: 0 10px 24px #3d28332a; }
+    button:hover:not(:disabled) { background: #74485a; }
     @media (max-width: 760px) { .page { padding: 2rem 5vw 5rem; } .detail { grid-template-columns: 1fr; gap: 2.5rem; } .visual { min-height: 360px; } }
   `],
 })
