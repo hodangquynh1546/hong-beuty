@@ -5,6 +5,7 @@
 .wordmark { color: #3d2833; text-decoration: none; letter-spacing: .17em; font-size: 1.35rem; font-weight: 700; white-space: nowrap; line-height: 1; }
 .wordmark span { display: block; font-size: .54rem; letter-spacing: .57em; margin-top: .35rem; }
 .menu-toggle { display: none; }
+.material-symbols-outlined { font-family: 'Material Symbols Outlined'; font-weight: normal; font-style: normal; font-size: 19px; line-height: 1; display: inline-block; font-feature-settings: 'liga'; vertical-align: middle; }
 nav { display: flex; gap: clamp(1rem, 2.5vw, 2.5rem); align-items: center; }
 nav a, .account-links a { color: #57474d; text-decoration: none; font-size: .78rem; font-weight: 600; white-space: nowrap; }
 nav a:hover, .account-links a:hover { color: #aa6c72; }

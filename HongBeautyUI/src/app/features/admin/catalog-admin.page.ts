@@ -7,7 +7,7 @@ import { ProductApiService, Product, ProductInput, Category, CategoryInput } fro
 import { AuthService, authErrorMessage } from '../../core/auth/auth.service';
 
 const emptyProduct = (): ProductInput => ({
-  categoryId: null, name: '', slug: '', description: '', price: 0, salePrice: null,
+  categoryId: null, name: '', slug: '', description: '', price: 0, costPrice: 0, salePrice: null,
   stock: 0, isActive: true, imageUrl: null,
 });
 const emptyCategory = (): CategoryInput => ({ name: '', slug: '', description: '', isActive: true });
@@ -81,7 +81,7 @@ export class CatalogAdminPage implements OnInit {
     this.productEditId = product.id;
     this.productForm = {
       categoryId: product.categoryId ?? null, name: product.name, slug: product.slug,
-      description: product.description, price: product.price, salePrice: product.salePrice,
+      description: product.description, price: product.price, costPrice: product.costPrice ?? 0, salePrice: product.salePrice,
       stock: product.stock, isActive: product.isActive ?? true, imageUrl: product.imageUrl ?? null,
     };
     this.notice.set('');
@@ -111,11 +111,12 @@ export class CatalogAdminPage implements OnInit {
       description: this.productForm.description.trim(),
       categoryId: this.productForm.categoryId || null,
       imageUrl: this.productForm.imageUrl?.trim() || null,
-      price: Number(this.productForm.price), stock: Number(this.productForm.stock),
+      price: Number(this.productForm.price), costPrice: Number(this.productForm.costPrice ?? 0), stock: Number(this.productForm.stock),
       salePrice: this.productForm.salePrice == null || String(this.productForm.salePrice).trim() === ''
         ? null : Number(this.productForm.salePrice),
     };
     if (!input.name || !input.slug || input.price < 0 || !Number.isFinite(input.price) ||
+        (input.costPrice ?? 0) < 0 || !Number.isFinite(input.costPrice ?? 0) ||
         !Number.isInteger(input.stock) || input.stock < 0 ||
         (input.salePrice !== null && (!Number.isFinite(input.salePrice) || input.salePrice < 0 || input.salePrice > input.price))) {
       this.error.set('Kiểm tra tên, đường dẫn, giá bán, giá khuyến mãi và tồn kho.'); return;

@@ -33,6 +33,7 @@ export interface Order {
   createdAt: string;
   status: string;
   paymentStatus: string;
+  paidAt?: string | null;
   shippingStatus: string;
   subtotal: number;
   shippingFee: number;
@@ -76,5 +77,8 @@ export class OrderApiService {
   }
   updateStatus(id: string, status: string): Observable<Order> {
     return this.http.patch<Order>(`/api/v1/admin/orders/${encodeURIComponent(id)}/status`, { status }, { withCredentials: true });
+  }
+  markPaid(id: string): Observable<Order> {
+    return this.http.post<Order>(`/api/v1/admin/orders/${encodeURIComponent(id)}/mark-paid`, {}, { withCredentials: true });
   }
 }

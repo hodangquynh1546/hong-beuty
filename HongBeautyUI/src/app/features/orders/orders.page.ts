@@ -20,6 +20,7 @@ import { Order, OrderApiService } from '../../core/api/order-api.service';
         <ul>@for (item of order.items; track item.productId) { <li>{{ item.productName }} × {{ item.quantity }} — {{ item.lineTotal | number }} ₫</li> }</ul>
         @if (!admin && (order.status === 'Pending' || order.status === 'Confirmed')) { <button type="button" [disabled]="busy" (click)="cancel(order)">Hủy đơn</button> }
         @if (admin && nextStatus(order.status); as next) { <button type="button" [disabled]="busy" (click)="advance(order, next)">Chuyển sang {{ statusLabel(next) }}</button> }
+        @if (admin && order.status !== 'Cancelled' && order.paymentStatus !== 'Paid') { <button type="button" [disabled]="busy" (click)="markPaid(order)">Đã nhận chuyển khoản</button> }
       </article>
     }
   </main>`,
@@ -59,6 +60,14 @@ export class OrdersPage implements OnInit {
     this.api.updateStatus(order.id, status).subscribe({
       next: updated => { this.replace(updated); this.notice = 'Đã cập nhật trạng thái đơn hàng.'; this.busy = false; },
       error: () => { this.error = 'Không cập nhật được trạng thái đơn hàng.'; this.busy = false; },
+    });
+  }
+  markPaid(order: Order): void {
+    if (this.busy || !window.confirm('Chỉ xác nhận sau khi đã kiểm tra tiền vào tài khoản. Đánh dấu đơn này đã thanh toán?')) return;
+    this.busy = true; this.error = ''; this.notice = '';
+    this.api.markPaid(order.id).subscribe({
+      next: updated => { this.replace(updated); this.notice = 'Đã ghi nhận thanh toán.'; this.busy = false; },
+      error: () => { this.error = 'Không ghi nhận được thanh toán.'; this.busy = false; },
     });
   }
   private replace(updated: Order): void { this.orders = this.orders.map(order => order.id === updated.id ? updated : order); }

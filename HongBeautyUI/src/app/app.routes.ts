@@ -13,6 +13,7 @@ import { OrdersPage } from './features/orders/orders.page';
 import { ServicesPage } from './features/services/services.page';
 import { ServicesAdminPage } from './features/admin/services-admin.page';
 import { AppointmentsPage } from './features/services/appointments.page';
+import { ReportsPage } from './features/admin/reports.page';
 
 export const routes: Routes = [
   { path: '', component: HomePage, title: 'Hong Beauty | Vẻ đẹp theo cách riêng' },
@@ -29,6 +30,7 @@ export const routes: Routes = [
   { path: 'admin/catalog', component: CatalogAdminPage, title: 'Quản trị danh mục | Hong Beauty' },
   { path: 'admin/services', component: ServicesAdminPage, title: 'Quản trị dịch vụ | Hong Beauty' },
   { path: 'admin/appointments', component: AppointmentsPage, title: 'Quản lý lịch hẹn | Hong Beauty' },
+  { path: 'admin/reports', component: ReportsPage, title: 'Báo cáo | Hong Beauty' },
   { path: 'cart', component: CartPage, title: 'Giỏ hàng | Hong Beauty' },
   { path: 'account/addresses', component: AddressesPage, title: 'Địa chỉ giao hàng | Hong Beauty' },
   { path: 'account/orders', component: OrdersPage, title: 'Đơn hàng | Hong Beauty' },

@@ -8,6 +8,7 @@ export interface Product {
   slug: string;
   description: string;
   price: number;
+  costPrice?: number;
   salePrice: number | null;
   stock: number;
   categoryId?: string | null;
@@ -29,6 +30,7 @@ export interface ProductInput {
   slug: string;
   description: string;
   price: number;
+  costPrice?: number;
   salePrice: number | null;
   stock: number;
   isActive: boolean;

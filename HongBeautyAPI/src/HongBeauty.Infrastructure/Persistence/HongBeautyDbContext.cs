@@ -2,6 +2,7 @@ using HongBeauty.Domain.Products;
 using HongBeauty.Domain.Orders;
 using HongBeauty.Domain.Users;
 using HongBeauty.Domain.Services;
+using HongBeauty.Domain.Reports;
 using Microsoft.EntityFrameworkCore;
 
 namespace HongBeauty.Infrastructure.Persistence;
@@ -12,6 +13,7 @@ public sealed class HongBeautyDbContext(DbContextOptions<HongBeautyDbContext> op
     public DbSet<ProductImage> ProductImages => Set<ProductImage>();
     public DbSet<BeautyService> BeautyServices => Set<BeautyService>();
     public DbSet<BeautyAppointment> BeautyAppointments => Set<BeautyAppointment>();
+    public DbSet<ShopExpense> ShopExpenses => Set<ShopExpense>();
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<UserAccount> Users => Set<UserAccount>();
     public DbSet<AuthActionToken> AuthActionTokens => Set<AuthActionToken>();
@@ -24,6 +26,14 @@ public sealed class HongBeautyDbContext(DbContextOptions<HongBeautyDbContext> op
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        var expense = modelBuilder.Entity<ShopExpense>();
+        expense.ToTable("shop_expenses");
+        expense.HasKey(x => x.Id);
+        expense.HasIndex(x => x.OccurredAt);
+        expense.Property(x => x.Category).HasMaxLength(100).IsRequired();
+        expense.Property(x => x.Note).HasMaxLength(500).IsRequired();
+        expense.Property(x => x.Amount).HasPrecision(18, 2);
+
         var appointment = modelBuilder.Entity<BeautyAppointment>();
         appointment.ToTable("beauty_appointments");
         appointment.HasKey(x => x.Id);
@@ -59,6 +69,7 @@ public sealed class HongBeautyDbContext(DbContextOptions<HongBeautyDbContext> op
         product.Property(x => x.Slug).HasMaxLength(200).IsRequired();
         product.Property(x => x.Description).HasMaxLength(5000);
         product.Property(x => x.Price).HasPrecision(18, 2);
+        product.Property(x => x.CostPrice).HasPrecision(18, 2);
         product.Property(x => x.SalePrice).HasPrecision(18, 2);
         product.Property(x => x.ImageUrl).HasMaxLength(2048);
         product.HasOne<Category>().WithMany().HasForeignKey(x => x.CategoryId).OnDelete(DeleteBehavior.Restrict);
@@ -131,6 +142,7 @@ public sealed class HongBeautyDbContext(DbContextOptions<HongBeautyDbContext> op
         order.Property(x => x.AddressLine).HasMaxLength(520).IsRequired();
         order.Property(x => x.Status).HasMaxLength(20).IsRequired();
         order.Property(x => x.PaymentStatus).HasMaxLength(20).IsRequired();
+        order.Property(x => x.PaidAt);
         order.Property(x => x.ShippingStatus).HasMaxLength(20).IsRequired();
         order.Property(x => x.Subtotal).HasPrecision(18, 2);
         order.Property(x => x.ShippingFee).HasPrecision(18, 2);
@@ -143,6 +155,7 @@ public sealed class HongBeautyDbContext(DbContextOptions<HongBeautyDbContext> op
         item.Property(x => x.ProductName).HasMaxLength(180).IsRequired();
         item.Property(x => x.ImageUrl).HasMaxLength(2048);
         item.Property(x => x.UnitPrice).HasPrecision(18, 2);
+        item.Property(x => x.UnitCost).HasPrecision(18, 2);
         item.HasOne<Product>().WithMany().HasForeignKey(x => x.ProductId).OnDelete(DeleteBehavior.Restrict);
     }
 }

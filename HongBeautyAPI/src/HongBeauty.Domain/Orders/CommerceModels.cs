@@ -55,6 +55,7 @@ public sealed class CustomerOrder
     public string AddressLine { get; private set; } = string.Empty;
     public string Status { get; private set; } = OrderStatuses.Pending;
     public string PaymentStatus { get; private set; } = "Unpaid";
+    public DateTimeOffset? PaidAt { get; private set; }
     public string ShippingStatus { get; private set; } = "NotCreated";
     public decimal Subtotal { get; private set; }
     public decimal ShippingFee { get; private set; }
@@ -79,6 +80,13 @@ public sealed class CustomerOrder
             throw new InvalidOperationException("This order cannot be cancelled automatically.");
         Status = OrderStatuses.Cancelled;
         return true;
+    }
+    public void MarkPaid()
+    {
+        if (Status == OrderStatuses.Cancelled) throw new InvalidOperationException("Cancelled order cannot be paid.");
+        if (PaymentStatus == "Paid") return;
+        PaymentStatus = "Paid";
+        PaidAt = DateTimeOffset.UtcNow;
     }
     public void SetStatus(string status)
     {
@@ -105,11 +113,12 @@ public sealed class CustomerOrderItem
     public string ProductName { get; private set; } = string.Empty;
     public string? ImageUrl { get; private set; }
     public decimal UnitPrice { get; private set; }
+    public decimal UnitCost { get; private set; }
     public int Quantity { get; private set; }
     private CustomerOrderItem() { }
-    public CustomerOrderItem(Guid productId, string productName, string? imageUrl, decimal unitPrice, int quantity)
+    public CustomerOrderItem(Guid productId, string productName, string? imageUrl, decimal unitPrice, int quantity, decimal unitCost = 0)
     {
-        if (unitPrice < 0 || quantity < 1) throw new ArgumentOutOfRangeException(nameof(quantity));
-        ProductId = productId; ProductName = productName; ImageUrl = imageUrl; UnitPrice = unitPrice; Quantity = quantity;
+        if (unitPrice < 0 || unitCost < 0 || quantity < 1) throw new ArgumentOutOfRangeException(nameof(quantity));
+        ProductId = productId; ProductName = productName; ImageUrl = imageUrl; UnitPrice = unitPrice; UnitCost = unitCost; Quantity = quantity;
     }
 }

@@ -9,6 +9,7 @@ public sealed class Product
     public Guid? CategoryId { get; private set; }
     public string? ImageUrl { get; private set; }
     public decimal Price { get; private set; }
+    public decimal CostPrice { get; private set; }
     public decimal? SalePrice { get; private set; }
     public int Stock { get; private set; }
     public bool IsActive { get; private set; } = true;
@@ -32,17 +33,18 @@ public sealed class Product
     public decimal EffectivePrice => SalePrice ?? Price;
 
     public void Update(Guid? categoryId, string name, string slug, string description,
-        decimal price, decimal? salePrice, int stock, bool isActive, string? imageUrl)
+        decimal price, decimal? salePrice, int stock, bool isActive, string? imageUrl, decimal costPrice = 0)
     {
         if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(slug))
             throw new ArgumentException("Product name and slug are required.");
-        if (price < 0 || stock < 0 || salePrice is < 0 || salePrice > price)
+        if (price < 0 || costPrice < 0 || stock < 0 || salePrice is < 0 || salePrice > price)
             throw new ArgumentOutOfRangeException(nameof(price), "Invalid price or stock.");
         CategoryId = categoryId;
         Name = name.Trim();
         Slug = slug.Trim().ToLowerInvariant();
         Description = description.Trim();
         Price = price;
+        CostPrice = costPrice;
         SalePrice = salePrice;
         Stock = stock;
         IsActive = isActive;

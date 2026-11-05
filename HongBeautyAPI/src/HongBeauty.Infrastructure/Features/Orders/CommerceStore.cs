@@ -81,7 +81,7 @@ public sealed class CommerceStore(HongBeautyDbContext db) : ICommerceStore
             if (product is null || !product.IsActive) throw new CommerceConflictException("A product is unavailable.");
             if (item.Quantity > product.Stock) throw new CommerceConflictException($"Insufficient inventory for {product.Name}.");
             product.Reserve(item.Quantity);
-            lines.Add(new CustomerOrderItem(product.Id, product.Name, product.ImageUrl, product.EffectivePrice, item.Quantity));
+            lines.Add(new CustomerOrderItem(product.Id, product.Name, product.ImageUrl, product.EffectivePrice, item.Quantity, product.CostPrice));
         }
         // MVP policy: free delivery. Provider-calculated fees arrive in Phase 5.
         var order = new CustomerOrder(userId, address, lines, 0m);
@@ -139,8 +139,20 @@ public sealed class CommerceStore(HongBeautyDbContext db) : ICommerceStore
         return MapOrder(order);
     }
 
+    public async Task<OrderDto?> MarkPaidAsync(Guid orderId, CancellationToken ct)
+    {
+        await using var tx = await db.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct);
+        var order = await db.Orders.FromSqlInterpolated($"SELECT * FROM orders WHERE \"Id\" = {orderId} FOR UPDATE")
+            .Include(x => x.Items).SingleOrDefaultAsync(ct);
+        if (order is null) return null;
+        order.MarkPaid();
+        await db.SaveChangesAsync(ct);
+        await tx.CommitAsync(ct);
+        return MapOrder(order);
+    }
+
     private static AddressDto MapAddress(CustomerAddress x) => new(x.Id, x.Recipient, x.Phone, x.Line1, x.Ward, x.District, x.Province);
     private static OrderDto MapOrder(CustomerOrder x) => new(x.Id, x.CreatedAt, x.Status, x.PaymentStatus, x.ShippingStatus,
         x.Subtotal, x.ShippingFee, x.Total, new OrderAddressDto(x.Recipient, x.Phone, x.AddressLine),
-        x.Items.Select(i => new OrderLineDto(i.ProductId, i.ProductName, i.ImageUrl, i.UnitPrice, i.Quantity, i.UnitPrice * i.Quantity)).ToList());
+        x.Items.Select(i => new OrderLineDto(i.ProductId, i.ProductName, i.ImageUrl, i.UnitPrice, i.Quantity, i.UnitPrice * i.Quantity)).ToList(), x.PaidAt);
 }

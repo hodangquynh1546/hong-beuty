@@ -5,6 +5,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { Product, ProductApiService } from '../../core/api/product-api.service';
 import { OrderApiService } from '../../core/api/order-api.service';
+import { AuthService } from '../../core/auth/auth.service';
 
 @Component({
   selector: 'app-product-detail-page',
@@ -29,7 +30,7 @@ import { OrderApiService } from '../../core/api/order-api.service';
               @if (item.salePrice !== null && item.salePrice < item.price) { <del>{{ item.price | currency:'VND':'symbol':'1.0-0':'vi' }}</del> }
             </div>
             <p class="availability">{{ item.stock > 0 ? 'Còn hàng' : 'Hết hàng' }}</p>
-            <div class="purchase-actions"><label for="quantity">Số lượng <input id="quantity" type="number" min="1" [max]="item.stock < 99 ? item.stock : 99" [value]="quantity()" (input)="setQuantity($event, item.stock)" /></label><button class="add-button" [class.added]="addedMotion()" type="button" [disabled]="item.stock === 0 || adding()" (click)="addToCart(item.id)"><span aria-hidden="true">🛍</span> {{ adding() ? 'Đang thêm…' : 'Thêm vào giỏ hàng' }}</button></div>
+            @if (auth.user()?.role !== 'Admin') { <div class="purchase-actions"><label for="quantity">Số lượng <input id="quantity" type="number" min="1" [max]="item.stock < 99 ? item.stock : 99" [value]="quantity()" (input)="setQuantity($event, item.stock)" /></label><button class="add-button" [class.added]="addedMotion()" type="button" [disabled]="item.stock === 0 || adding()" (click)="addToCart(item.id)"><span class="material-symbols-outlined" aria-hidden="true">shopping_bag</span> {{ adding() ? 'Đang thêm…' : 'Thêm vào giỏ hàng' }}</button></div> }
             @if (addedMotion()) { <span class="cart-spark" aria-hidden="true">✦</span> }
             @if (cartNotice()) { <p role="status">{{ cartNotice() }} <a routerLink="/cart">Xem giỏ hàng</a></p> }
             @if (cartError()) { <p role="alert">{{ cartError() }}</p> }
@@ -75,6 +76,7 @@ import { OrderApiService } from '../../core/api/order-api.service';
 export class ProductDetailPage {
   private readonly api = inject(ProductApiService);
   private readonly orders = inject(OrderApiService);
+  readonly auth = inject(AuthService);
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   private request?: Subscription;

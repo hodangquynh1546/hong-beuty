@@ -9,7 +9,7 @@ public sealed record AddressDto(Guid Id, string Recipient, string Phone, string 
 public sealed record OrderLineDto(Guid ProductId, string ProductName, string? ImageUrl, decimal UnitPrice, int Quantity, decimal LineTotal);
 public sealed record OrderAddressDto(string Recipient, string Phone, string AddressLine);
 public sealed record OrderDto(Guid Id, DateTimeOffset CreatedAt, string Status, string PaymentStatus, string ShippingStatus,
-    decimal Subtotal, decimal ShippingFee, decimal Total, OrderAddressDto Address, IReadOnlyList<OrderLineDto> Items);
+    decimal Subtotal, decimal ShippingFee, decimal Total, OrderAddressDto Address, IReadOnlyList<OrderLineDto> Items, DateTimeOffset? PaidAt = null);
 
 public interface ICommerceStore
 {
@@ -24,6 +24,7 @@ public interface ICommerceStore
     Task<OrderDto?> CancelOrderAsync(Guid userId, Guid orderId, CancellationToken ct);
     Task<IReadOnlyList<OrderDto>> GetAdminOrdersAsync(CancellationToken ct);
     Task<OrderDto?> SetAdminStatusAsync(Guid orderId, string status, CancellationToken ct);
+    Task<OrderDto?> MarkPaidAsync(Guid orderId, CancellationToken ct);
 }
 
 public sealed class CommerceConflictException(string message) : Exception(message);

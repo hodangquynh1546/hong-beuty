@@ -33,8 +33,8 @@ public sealed class ProductCatalog(HongBeautyDbContext database) : IProductCatal
     public async Task<IReadOnlyList<CategoryDto>> ListAdminCategoriesAsync(CancellationToken cancellationToken) =>
         await ProjectCategories(database.Categories.AsNoTracking().OrderBy(x => x.Name)).ToListAsync(cancellationToken);
 
-    public async Task<IReadOnlyList<ProductDto>> ListAdminProductsAsync(CancellationToken cancellationToken) =>
-        await ProjectProducts(database.Products.AsNoTracking().OrderBy(x => x.Name)).ToListAsync(cancellationToken);
+    public async Task<IReadOnlyList<AdminProductDto>> ListAdminProductsAsync(CancellationToken cancellationToken) =>
+        await ProjectAdminProducts(database.Products.AsNoTracking().OrderBy(x => x.Name)).ToListAsync(cancellationToken);
 
     public async Task<CatalogWriteResponse<CategoryDto>> CreateCategoryAsync(CategoryInput input, CancellationToken cancellationToken)
     {
@@ -63,26 +63,26 @@ public sealed class ProductCatalog(HongBeautyDbContext database) : IProductCatal
         return CatalogWriteResult.Success;
     }
 
-    public async Task<CatalogWriteResponse<ProductDto>> CreateProductAsync(ProductInput input, CancellationToken cancellationToken)
+    public async Task<CatalogWriteResponse<AdminProductDto>> CreateProductAsync(ProductInput input, CancellationToken cancellationToken)
     {
         if (!await CategoryValidAsync(input.CategoryId, cancellationToken)) return new(CatalogWriteResult.InvalidCategory, null);
         var product = new Product(input.Name, input.Slug, input.Description, input.Price, input.Stock);
         product.Update(input.CategoryId, input.Name, input.Slug, input.Description, input.Price,
-            input.SalePrice, input.Stock, input.IsActive, input.ImageUrl);
+            input.SalePrice, input.Stock, input.IsActive, input.ImageUrl, input.CostPrice);
         database.Products.Add(product);
         if (!await SaveOrConflictAsync(cancellationToken)) return new(CatalogWriteResult.Conflict, null);
-        return new(CatalogWriteResult.Success, Map(product));
+        return new(CatalogWriteResult.Success, MapAdmin(product));
     }
 
-    public async Task<CatalogWriteResponse<ProductDto>> UpdateProductAsync(Guid id, ProductInput input, CancellationToken cancellationToken)
+    public async Task<CatalogWriteResponse<AdminProductDto>> UpdateProductAsync(Guid id, ProductInput input, CancellationToken cancellationToken)
     {
         var product = await database.Products.FindAsync([id], cancellationToken);
         if (product is null) return new(CatalogWriteResult.NotFound, null);
         if (!await CategoryValidAsync(input.CategoryId, cancellationToken)) return new(CatalogWriteResult.InvalidCategory, null);
         product.Update(input.CategoryId, input.Name, input.Slug, input.Description, input.Price,
-            input.SalePrice, input.Stock, input.IsActive, input.ImageUrl);
+            input.SalePrice, input.Stock, input.IsActive, input.ImageUrl, input.CostPrice);
         if (!await SaveOrConflictAsync(cancellationToken)) return new(CatalogWriteResult.Conflict, null);
-        return new(CatalogWriteResult.Success, Map(product));
+        return new(CatalogWriteResult.Success, MapAdmin(product));
     }
 
     public async Task<CatalogWriteResult> DeactivateProductAsync(Guid id, CancellationToken cancellationToken)
@@ -113,13 +113,20 @@ public sealed class ProductCatalog(HongBeautyDbContext database) : IProductCatal
 
     private static IQueryable<ProductDto> ProjectProducts(IQueryable<Product> query) =>
         query.Select(x => new ProductDto(x.Id, x.Name, x.Slug, x.Description, x.Price,
-            x.SalePrice, x.Stock, x.CategoryId, x.IsActive, x.ImageUrl));
+        x.SalePrice, x.Stock, x.CategoryId, x.IsActive, x.ImageUrl));
+
+    private static IQueryable<AdminProductDto> ProjectAdminProducts(IQueryable<Product> query) =>
+        query.Select(x => new AdminProductDto(x.Id, x.Name, x.Slug, x.Description, x.Price,
+            x.SalePrice, x.CostPrice, x.Stock, x.CategoryId, x.IsActive, x.ImageUrl));
 
     private static IQueryable<CategoryDto> ProjectCategories(IQueryable<Category> query) =>
         query.Select(x => new CategoryDto(x.Id, x.Name, x.Slug, x.Description, x.IsActive));
 
     private static ProductDto Map(Product x) => new(x.Id, x.Name, x.Slug, x.Description,
         x.Price, x.SalePrice, x.Stock, x.CategoryId, x.IsActive, x.ImageUrl);
+
+    private static AdminProductDto MapAdmin(Product x) => new(x.Id, x.Name, x.Slug, x.Description,
+        x.Price, x.SalePrice, x.CostPrice, x.Stock, x.CategoryId, x.IsActive, x.ImageUrl);
 
     private static CategoryDto Map(Category x) => new(x.Id, x.Name, x.Slug, x.Description, x.IsActive);
 }

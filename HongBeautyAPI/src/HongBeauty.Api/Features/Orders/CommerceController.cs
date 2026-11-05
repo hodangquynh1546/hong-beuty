@@ -122,4 +122,11 @@ public sealed class AdminOrdersController(ICommerceStore store) : ControllerBase
         try { return await store.SetAdminStatusAsync(id, request.Status, ct) is { } order ? Ok(order) : NotFound(); }
         catch (InvalidOperationException ex) { return Conflict(new ProblemDetails { Title = ex.Message }); }
     }
+
+    [HttpPost("{id:guid}/mark-paid")]
+    public async Task<IActionResult> MarkPaid(Guid id, CancellationToken ct)
+    {
+        try { return await store.MarkPaidAsync(id, ct) is { } order ? Ok(order) : NotFound(); }
+        catch (InvalidOperationException ex) { return Conflict(new ProblemDetails { Title = ex.Message }); }
+    }
 }

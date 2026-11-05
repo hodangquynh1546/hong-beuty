@@ -48,7 +48,7 @@ public sealed class AdminCategoriesController(IProductCatalog catalog, IValidato
 public sealed class AdminProductsController(IProductCatalog catalog, IValidator<ProductInput> validator) : ControllerBase
 {
     [HttpGet]
-    public Task<IReadOnlyList<ProductDto>> List(CancellationToken cancellationToken) => catalog.ListAdminProductsAsync(cancellationToken);
+    public Task<IReadOnlyList<AdminProductDto>> List(CancellationToken cancellationToken) => catalog.ListAdminProductsAsync(cancellationToken);
 
     [HttpPost]
     public async Task<IActionResult> Create(ProductInput input, CancellationToken cancellationToken)
