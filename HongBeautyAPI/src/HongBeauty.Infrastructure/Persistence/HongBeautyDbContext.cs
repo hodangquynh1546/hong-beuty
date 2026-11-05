@@ -3,6 +3,7 @@ using HongBeauty.Domain.Orders;
 using HongBeauty.Domain.Users;
 using HongBeauty.Domain.Services;
 using HongBeauty.Domain.Reports;
+using HongBeauty.Domain.Support;
 using Microsoft.EntityFrameworkCore;
 
 namespace HongBeauty.Infrastructure.Persistence;
@@ -14,6 +15,7 @@ public sealed class HongBeautyDbContext(DbContextOptions<HongBeautyDbContext> op
     public DbSet<BeautyService> BeautyServices => Set<BeautyService>();
     public DbSet<BeautyAppointment> BeautyAppointments => Set<BeautyAppointment>();
     public DbSet<ShopExpense> ShopExpenses => Set<ShopExpense>();
+    public DbSet<SupportMessage> SupportMessages => Set<SupportMessage>();
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<UserAccount> Users => Set<UserAccount>();
     public DbSet<AuthActionToken> AuthActionTokens => Set<AuthActionToken>();
@@ -26,6 +28,13 @@ public sealed class HongBeautyDbContext(DbContextOptions<HongBeautyDbContext> op
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        var support = modelBuilder.Entity<SupportMessage>();
+        support.ToTable("support_messages");
+        support.HasKey(x => x.Id);
+        support.HasIndex(x => new { x.CustomerId, x.CreatedAt });
+        support.HasOne<UserAccount>().WithMany().HasForeignKey(x => x.CustomerId).OnDelete(DeleteBehavior.Cascade);
+        support.Property(x => x.Body).HasMaxLength(2000).IsRequired();
+
         var expense = modelBuilder.Entity<ShopExpense>();
         expense.ToTable("shop_expenses");
         expense.HasKey(x => x.Id);

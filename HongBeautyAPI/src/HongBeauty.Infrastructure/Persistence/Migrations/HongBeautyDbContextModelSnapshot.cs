@@ -448,6 +448,36 @@ namespace HongBeauty.Infrastructure.Persistence.Migrations
                     b.ToTable("beauty_services", (string)null);
                 });
 
+            modelBuilder.Entity("HongBeauty.Domain.Support.SupportMessage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("FromAdmin")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTimeOffset?>("ReadAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerId", "CreatedAt");
+
+                    b.ToTable("support_messages", (string)null);
+                });
+
             modelBuilder.Entity("HongBeauty.Domain.Users.AuthActionToken", b =>
                 {
                     b.Property<Guid>("Id")
@@ -640,6 +670,15 @@ namespace HongBeauty.Infrastructure.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("HongBeauty.Domain.Support.SupportMessage", b =>
+                {
+                    b.HasOne("HongBeauty.Domain.Users.UserAccount", null)
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
