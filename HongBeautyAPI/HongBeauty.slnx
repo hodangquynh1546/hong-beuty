@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/HongBeauty.Api/HongBeauty.Api.csproj" />
+    <Project Path="src/HongBeauty.Application/HongBeauty.Application.csproj" />
+    <Project Path="src/HongBeauty.Domain/HongBeauty.Domain.csproj" />
+    <Project Path="src/HongBeauty.Infrastructure/HongBeauty.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/HongBeauty.UnitTests/HongBeauty.UnitTests.csproj" />
+  </Folder>
+</Solution>

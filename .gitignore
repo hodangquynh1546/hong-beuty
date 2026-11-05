@@ -1,0 +1,10 @@
+**/bin/
+**/obj/
+**/node_modules/
+**/dist/
+**/.angular/
+.env
+.env.*
+!.env.example
+**/appsettings.Production.json
+**/TestResults/
