@@ -4,7 +4,7 @@ Greenfield implementation using Angular 20, .NET 10 and PostgreSQL. The current 
 
 ## Run locally
 
-Set a local PostgreSQL connection string in `ConnectionStrings__Default`. Apply the migration with `dotnet ef database update` from `HongBeautyAPI/`, then run the API project. Run `npm install` and `npm start` from `HongBeautyUI/`; the dev proxy forwards `/api` to the API. A container build is defined in `Dockerfile` and `compose.yaml`, but this workspace has no container runtime to verify it.
+Set a local PostgreSQL connection string in `ConnectionStrings__Default`. Apply the migration with EF Core tooling, then run the API project on port 5000 (`--no-launch-profile`). Run `npm install` and `npm start` from `HongBeautyUI/`; the dev proxy forwards `/api` to port 5000. A container build and database migration service are defined in `Dockerfile` and `compose.yaml`; see [deployment notes](docs/DEPLOYMENT.md). This workspace has no container runtime to verify that path.
 
 The public product list reads from PostgreSQL. No product seed is added, so an empty list is expected until an authorized management flow is implemented. Health check: `/api/v1/health`.
 

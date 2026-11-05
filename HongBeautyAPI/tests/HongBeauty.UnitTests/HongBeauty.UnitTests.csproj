@@ -21,6 +21,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\HongBeauty.Application\HongBeauty.Application.csproj" />
     <ProjectReference Include="..\..\src\HongBeauty.Domain\HongBeauty.Domain.csproj" />
+    <ProjectReference Include="..\..\src\HongBeauty.Infrastructure\HongBeauty.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

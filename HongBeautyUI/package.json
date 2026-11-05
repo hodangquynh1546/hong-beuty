@@ -27,10 +27,11 @@
     "@angular/compiler": "^20.3.0",
     "@angular/core": "^20.3.0",
     "@angular/forms": "^20.3.0",
+    "@angular/localize": "^20.3.35",
     "@angular/platform-browser": "^20.3.0",
     "@angular/router": "^20.3.0",
-    "@progress/kendo-angular-grid": "^23.3.0",
-    "@progress/kendo-theme-default": "^14.8.0",
+    "@progress/kendo-angular-grid": "23.3.0",
+    "@progress/kendo-theme-default": "^14.3.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.15.0"

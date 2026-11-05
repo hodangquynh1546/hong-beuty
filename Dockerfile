@@ -11,6 +11,10 @@ COPY HongBeautyAPI/ ./HongBeautyAPI/
 RUN dotnet restore HongBeautyAPI/HongBeauty.slnx
 RUN dotnet publish HongBeautyAPI/src/HongBeauty.Api/HongBeauty.Api.csproj -c Release -o /out --no-restore
 
+FROM build AS migrate
+RUN dotnet tool install dotnet-ef --version 10.0.4 --tool-path /tools
+ENTRYPOINT ["/tools/dotnet-ef", "database", "update", "--project", "HongBeautyAPI/src/HongBeauty.Infrastructure/HongBeauty.Infrastructure.csproj", "--startup-project", "HongBeautyAPI/src/HongBeauty.Infrastructure/HongBeauty.Infrastructure.csproj"]
+
 FROM mcr.microsoft.com/dotnet/aspnet:10.0
 WORKDIR /app
 COPY --from=build /out ./

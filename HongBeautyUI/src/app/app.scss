@@ -5,6 +5,9 @@
 .wordmark span { display: block; font-size: .55rem; letter-spacing: .55em; margin-top: .1rem; }
 nav { display: flex; gap: 2rem; align-items: center; }
 nav a, .contact-link { color: #493f3d; text-decoration: none; font-size: .85rem; }
+.account-links { display: flex; align-items: center; gap: 1rem; white-space: nowrap; }
+.account-links a { color: #493f3d; text-decoration: none; font-size: .85rem; }
+.account-links a:hover { color: #ab6c6b; }
 nav a:hover, .contact-link:hover { color: #ab6c6b; }
 .contact-link { border-bottom: 1px solid #b99087; padding-bottom: .3rem; }
 footer { background: #332b2b; color: #f6eae5; display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 3rem; padding: 4rem max(4vw, calc((100vw - 1214px)/2)); }
