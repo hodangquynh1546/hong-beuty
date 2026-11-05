@@ -10,6 +10,7 @@ form { margin-top: 2rem; display: flex; flex-direction: column; }
 label { font-size: .83rem; font-weight: 600; margin: 1rem 0 .5rem; }
 input { width: 100%; border: 1px solid #dfd1cc; background: #fff; padding: 1rem 1.1rem; outline-color: #a77576; border-radius: 4px; }
 input:focus { border-color: #a77576; box-shadow: 0 0 0 4px #a775761c; }
+.remember { display: flex; align-items: center; gap: .55rem; margin-top: 1.2rem; font-weight: 400; }.remember input { width: auto; margin: 0; accent-color: #74485a; }
 .field-error { color: #a33f42; margin-top: .35rem; }
 .message { padding: .85rem 1rem; margin-top: 1.2rem; }
 .error { background: #f8e2e1; color: #8a3032; }

@@ -29,7 +29,8 @@ import { OrderApiService } from '../../core/api/order-api.service';
               @if (item.salePrice !== null && item.salePrice < item.price) { <del>{{ item.price | currency:'VND':'symbol':'1.0-0':'vi' }}</del> }
             </div>
             <p class="availability">{{ item.stock > 0 ? 'Còn hàng' : 'Hết hàng' }}</p>
-            <button type="button" [disabled]="item.stock === 0 || adding()" (click)="addToCart(item.id)">{{ adding() ? 'Đang thêm…' : 'Thêm vào giỏ hàng' }}</button>
+            <div class="purchase-actions"><label for="quantity">Số lượng <input id="quantity" type="number" min="1" [max]="item.stock < 99 ? item.stock : 99" [value]="quantity()" (input)="setQuantity($event, item.stock)" /></label><button class="add-button" [class.added]="addedMotion()" type="button" [disabled]="item.stock === 0 || adding()" (click)="addToCart(item.id)"><span aria-hidden="true">🛍</span> {{ adding() ? 'Đang thêm…' : 'Thêm vào giỏ hàng' }}</button></div>
+            @if (addedMotion()) { <span class="cart-spark" aria-hidden="true">✦</span> }
             @if (cartNotice()) { <p role="status">{{ cartNotice() }} <a routerLink="/cart">Xem giỏ hàng</a></p> }
             @if (cartError()) { <p role="alert">{{ cartError() }}</p> }
             <div class="description"><h2>Mô tả sản phẩm</h2><p>{{ item.description || 'Thông tin mô tả đang được cập nhật.' }}</p></div>
@@ -66,6 +67,8 @@ import { OrderApiService } from '../../core/api/order-api.service';
     .error { background: #f8e2e1; }
     button { border: 0; background: #3d2833; color: #fff; padding: 1rem 1.5rem; cursor: pointer; border-radius: 4px; box-shadow: 0 10px 24px #3d28332a; }
     button:hover:not(:disabled) { background: #74485a; }
+    .purchase-actions { display: flex; gap: .8rem; align-items: end; flex-wrap: wrap; }.purchase-actions label { font-size: .75rem; color: #7c625d; }.purchase-actions input { display: block; width: 80px; margin-top: .4rem; padding: .9rem; border: 1px solid #d9c7c8; border-radius: 6px; font: inherit; }.add-button.added { animation: cart-pop .65s ease; }.cart-spark { position: absolute; color: #b57483; font-size: 2rem; animation: spark-away .8s ease forwards; pointer-events: none; }@keyframes cart-pop{50%{transform:scale(1.06)}}@keyframes spark-away{to{transform:translate(70px,-70px) scale(.3);opacity:0}}
+    @media(prefers-reduced-motion:reduce){ .add-button.added,.cart-spark { animation: none; } }
     @media (max-width: 760px) { .page { padding: 2rem 5vw 5rem; } .detail { grid-template-columns: 1fr; gap: 2.5rem; } .visual { min-height: 360px; } }
   `],
 })
@@ -83,14 +86,22 @@ export class ProductDetailPage {
   readonly adding = signal(false);
   readonly cartNotice = signal('');
   readonly cartError = signal('');
+  readonly quantity = signal(1);
+  readonly addedMotion = signal(false);
+
+  setQuantity(event: Event, stock: number): void {
+    const raw = Number((event.target as HTMLInputElement).value);
+    this.quantity.set(Number.isInteger(raw) ? Math.max(1, Math.min(raw, stock, 99)) : 1);
+  }
 
   addToCart(productId: string): void {
     this.adding.set(true); this.cartNotice.set(''); this.cartError.set('');
     this.orders.cart().subscribe({
       next: cart => {
         const current = cart.items.find(x => x.productId === productId)?.quantity ?? 0;
-        this.orders.setQuantity(productId, current + 1).subscribe({
-          next: () => { this.adding.set(false); this.cartNotice.set('Đã thêm sản phẩm vào giỏ hàng.'); },
+        if (current + this.quantity() > 99) { this.adding.set(false); this.cartError.set('Giỏ hàng chỉ nhận tối đa 99 sản phẩm mỗi loại.'); return; }
+        this.orders.setQuantity(productId, current + this.quantity()).subscribe({
+          next: () => { this.adding.set(false); this.cartNotice.set(`Đã thêm ${this.quantity()} sản phẩm vào giỏ hàng.`); this.addedMotion.set(true); setTimeout(() => this.addedMotion.set(false), 900); },
           error: () => { this.adding.set(false); this.cartError.set('Không thể thêm sản phẩm. Vui lòng đăng nhập hoặc kiểm tra tồn kho.'); },
         });
       },

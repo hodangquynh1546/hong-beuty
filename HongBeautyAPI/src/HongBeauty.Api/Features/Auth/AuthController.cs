@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.RateLimiting;
 namespace HongBeauty.Api.Features.Auth;
 
 public sealed record RegisterRequest(string FullName, string Email, string Password);
-public sealed record LoginRequest(string Email, string Password);
+public sealed record LoginRequest(string Email, string Password, bool RememberMe = false);
 public sealed record UpdateProfileRequest(string FullName);
 
 public sealed class RegisterRequestValidator : AbstractValidator<RegisterRequest>
@@ -70,7 +70,7 @@ public sealed class AuthController(
 
         var user = await auth.LoginAsync(request.Email, request.Password, cancellationToken);
         if (user is null) return Unauthorized(new ProblemDetails { Status = 401, Title = "Email hoặc mật khẩu không đúng." });
-        await SignInAsync(user);
+        await SignInAsync(user, request.RememberMe);
         return Ok(user);
     }
 
@@ -106,7 +106,7 @@ public sealed class AuthController(
         return user is null ? Unauthorized() : Ok(user);
     }
 
-    private async Task SignInAsync(AuthUserDto user)
+    private async Task SignInAsync(AuthUserDto user, bool rememberMe = false)
     {
         var account = await users.FindByIdAsync(user.Id, HttpContext.RequestAborted)
             ?? throw new InvalidOperationException("Account disappeared after authentication.");
@@ -114,6 +114,7 @@ public sealed class AuthController(
             [new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()), new Claim(ClaimTypes.Sid, account.SecurityStamp.ToString())],
             CookieAuthenticationDefaults.AuthenticationScheme);
         var principal = new ClaimsPrincipal(identity);
-        await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+        await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal,
+            new AuthenticationProperties { IsPersistent = rememberMe });
     }
 }

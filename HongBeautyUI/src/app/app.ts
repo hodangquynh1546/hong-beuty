@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { RouterLink, RouterOutlet } from '@angular/router';
 import { AuthService } from './core/auth/auth.service';
 
@@ -10,5 +10,6 @@ import { AuthService } from './core/auth/auth.service';
 })
 export class App {
   readonly auth = inject(AuthService);
+  readonly menuOpen = signal(false);
   constructor() { this.auth.refresh().subscribe(); }
 }

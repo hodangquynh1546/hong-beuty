@@ -19,6 +19,7 @@ import { AuthService, authErrorMessage } from '../../core/auth/auth.service';
             <input id="fullName" name="fullName" type="text" [(ngModel)]="fullName" required minlength="2" maxlength="120" autocomplete="name" #nameField="ngModel" />
             @if (nameField.invalid && (nameField.touched || submitted())) { <small class="field-error">Vui lòng nhập họ tên từ 2 ký tự.</small> }
           }
+          @if (!isRegister) { <label class="remember"><input name="rememberMe" type="checkbox" [(ngModel)]="rememberMe" /> Duy trì đăng nhập trên thiết bị này</label> }
           <label for="email">Email</label>
           <input id="email" name="email" type="email" [(ngModel)]="email" required email maxlength="254" autocomplete="email" #emailField="ngModel" />
           @if (emailField.invalid && (emailField.touched || submitted())) { <small class="field-error">Vui lòng nhập email hợp lệ.</small> }
@@ -48,6 +49,7 @@ export class AuthFormPage {
   email = '';
   password = '';
   confirmPassword = '';
+  rememberMe = false;
   readonly loading = signal(false);
   readonly submitted = signal(false);
   readonly error = signal('');
@@ -59,7 +61,7 @@ export class AuthFormPage {
     this.loading.set(true);
     const request = this.isRegister
       ? this.auth.register({ fullName: this.fullName.trim(), email: this.email.trim(), password: this.password })
-      : this.auth.login({ email: this.email.trim(), password: this.password });
+      : this.auth.login({ email: this.email.trim(), password: this.password, rememberMe: this.rememberMe });
     request.subscribe({
       next: user => { this.loading.set(false); void this.router.navigateByUrl(user.permissions.includes('catalog.write') ? '/admin/catalog' : '/account'); },
       error: error => {
