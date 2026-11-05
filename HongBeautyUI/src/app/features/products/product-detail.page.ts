@@ -4,6 +4,7 @@ import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { Product, ProductApiService } from '../../core/api/product-api.service';
+import { OrderApiService } from '../../core/api/order-api.service';
 
 @Component({
   selector: 'app-product-detail-page',
@@ -28,6 +29,9 @@ import { Product, ProductApiService } from '../../core/api/product-api.service';
               @if (item.salePrice !== null && item.salePrice < item.price) { <del>{{ item.price | currency:'VND':'symbol':'1.0-0':'vi' }}</del> }
             </div>
             <p class="availability">{{ item.stock > 0 ? 'Còn hàng' : 'Hết hàng' }}</p>
+            <button type="button" [disabled]="item.stock === 0 || adding()" (click)="addToCart(item.id)">{{ adding() ? 'Đang thêm…' : 'Thêm vào giỏ hàng' }}</button>
+            @if (cartNotice()) { <p role="status">{{ cartNotice() }} <a routerLink="/cart">Xem giỏ hàng</a></p> }
+            @if (cartError()) { <p role="alert">{{ cartError() }}</p> }
             <div class="description"><h2>Mô tả sản phẩm</h2><p>{{ item.description || 'Thông tin mô tả đang được cập nhật.' }}</p></div>
             <a class="catalog-link" routerLink="/products">Tiếp tục khám phá sản phẩm <span aria-hidden="true">↗</span></a>
           </div>
@@ -66,6 +70,7 @@ import { Product, ProductApiService } from '../../core/api/product-api.service';
 })
 export class ProductDetailPage {
   private readonly api = inject(ProductApiService);
+  private readonly orders = inject(OrderApiService);
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   private request?: Subscription;
@@ -74,6 +79,23 @@ export class ProductDetailPage {
   readonly notFound = signal(false);
   readonly error = signal(false);
   readonly product = signal<Product | null>(null);
+  readonly adding = signal(false);
+  readonly cartNotice = signal('');
+  readonly cartError = signal('');
+
+  addToCart(productId: string): void {
+    this.adding.set(true); this.cartNotice.set(''); this.cartError.set('');
+    this.orders.cart().subscribe({
+      next: cart => {
+        const current = cart.items.find(x => x.productId === productId)?.quantity ?? 0;
+        this.orders.setQuantity(productId, current + 1).subscribe({
+          next: () => { this.adding.set(false); this.cartNotice.set('Đã thêm sản phẩm vào giỏ hàng.'); },
+          error: () => { this.adding.set(false); this.cartError.set('Không thể thêm sản phẩm. Vui lòng đăng nhập hoặc kiểm tra tồn kho.'); },
+        });
+      },
+      error: () => { this.adding.set(false); this.cartError.set('Vui lòng đăng nhập để thêm sản phẩm.'); },
+    });
+  }
 
   constructor() {
     this.route.paramMap.subscribe(params => { this.id = params.get('id') ?? ''; this.load(); });

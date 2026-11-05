@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: hong-beauty-demo
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: ASPNETCORE_URLS
+        value: http://+:8080
+      - key: HONG_BEAUTY_MIGRATE_ON_START
+        value: "true"
+      - key: DATABASE_URL
+        sync: false
+      - key: HONG_BEAUTY_BOOTSTRAP_ADMIN_EMAIL
+        sync: false
+      - key: HONG_BEAUTY_BOOTSTRAP_ADMIN_PASSWORD
+        sync: false
+      - key: HONG_BEAUTY_BOOTSTRAP_ADMIN_FULL_NAME
+        sync: false

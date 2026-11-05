@@ -2,10 +2,13 @@ using HongBeauty.Api.Middleware;
 using HongBeauty.Api.Authorization;
 using HongBeauty.Api.Features.Auth;
 using HongBeauty.Api.Features.Products;
+using HongBeauty.Api.Features.Orders;
 using HongBeauty.Application.Features.Auth;
 using HongBeauty.Application.Features.Products;
+using HongBeauty.Application.Features.Orders;
 using HongBeauty.Infrastructure.Features.Auth;
 using HongBeauty.Infrastructure.Features.Products;
+using HongBeauty.Infrastructure.Features.Orders;
 using HongBeauty.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using FluentValidation;
@@ -16,6 +19,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using System.Threading.RateLimiting;
 using Serilog;
 using Serilog.Formatting.Compact;
+using Npgsql;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Host.UseSerilog((context, configuration) => configuration
@@ -24,11 +28,29 @@ builder.Host.UseSerilog((context, configuration) => configuration
     .Enrich.WithEnvironmentName()
     .WriteTo.Async(sink => sink.Console(new RenderedCompactJsonFormatter())));
 
-var connectionString = builder.Configuration.GetConnectionString("Default")
-    ?? throw new InvalidOperationException("ConnectionStrings:Default is required.");
+var connectionString = builder.Configuration.GetConnectionString("Default");
+if (string.IsNullOrWhiteSpace(connectionString) && builder.Configuration["DATABASE_URL"] is { } databaseUrl)
+{
+    if (!Uri.TryCreate(databaseUrl, UriKind.Absolute, out var uri) ||
+        uri.Scheme is not ("postgres" or "postgresql") || uri.UserInfo.Split(':', 2) is not [var username, var password])
+        throw new InvalidOperationException("DATABASE_URL must be a PostgreSQL connection URL.");
+    connectionString = new NpgsqlConnectionStringBuilder
+    {
+        Host = uri.Host,
+        Port = uri.IsDefaultPort ? 5432 : uri.Port,
+        Database = Uri.UnescapeDataString(uri.AbsolutePath.TrimStart('/')),
+        Username = Uri.UnescapeDataString(username),
+        Password = Uri.UnescapeDataString(password),
+        SslMode = SslMode.Require
+    }.ConnectionString;
+}
+if (string.IsNullOrWhiteSpace(connectionString))
+    throw new InvalidOperationException("ConnectionStrings:Default or DATABASE_URL is required.");
 
 builder.Services.AddDbContext<HongBeautyDbContext>(options => options.UseNpgsql(connectionString));
 builder.Services.AddScoped<IProductCatalog, ProductCatalog>();
+builder.Services.AddScoped<ICommerceStore, CommerceStore>();
+builder.Services.AddScoped<IValidator<AddressInput>, AddressInputValidator>();
 builder.Services.AddScoped<IValidator<CategoryInput>, CategoryInputValidator>();
 builder.Services.AddScoped<IValidator<ProductInput>, ProductInputValidator>();
 builder.Services.AddScoped<IUserAccountStore, UserAccountStore>();
@@ -106,6 +128,11 @@ builder.Services.AddApiVersioning(options =>
 }).AddMvc().AddApiExplorer();
 
 var app = builder.Build();
+if (builder.Configuration.GetValue<bool>("HONG_BEAUTY_MIGRATE_ON_START"))
+{
+    await using var scope = app.Services.CreateAsyncScope();
+    await scope.ServiceProvider.GetRequiredService<HongBeautyDbContext>().Database.MigrateAsync();
+}
 app.UseSerilogRequestLogging();
 app.UseExceptionHandler();
 app.UseMiddleware<CorrelationIdMiddleware>();

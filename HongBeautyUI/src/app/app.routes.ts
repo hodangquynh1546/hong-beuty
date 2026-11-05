@@ -7,6 +7,9 @@ import { AccountPage } from './features/auth/account.page';
 import { PasswordRecoveryPage } from './features/auth/password-recovery.page';
 import { EmailVerificationPage } from './features/auth/email-verification.page';
 import { CatalogAdminPage } from './features/admin/catalog-admin.page';
+import { CartPage } from './features/orders/cart.page';
+import { AddressesPage } from './features/orders/addresses.page';
+import { OrdersPage } from './features/orders/orders.page';
 
 export const routes: Routes = [
   { path: '', component: HomePage, title: 'Hong Beauty | Vẻ đẹp theo cách riêng' },
@@ -19,5 +22,9 @@ export const routes: Routes = [
   { path: 'reset-password', component: PasswordRecoveryPage, title: 'Đặt lại mật khẩu | Hong Beauty' },
   { path: 'verify-email', component: EmailVerificationPage, title: 'Xác nhận email | Hong Beauty' },
   { path: 'admin/catalog', component: CatalogAdminPage, title: 'Quản trị danh mục | Hong Beauty' },
+  { path: 'cart', component: CartPage, title: 'Giỏ hàng | Hong Beauty' },
+  { path: 'account/addresses', component: AddressesPage, title: 'Địa chỉ giao hàng | Hong Beauty' },
+  { path: 'account/orders', component: OrdersPage, title: 'Đơn hàng | Hong Beauty' },
+  { path: 'admin/orders', component: OrdersPage, title: 'Quản trị đơn hàng | Hong Beauty', data: { admin: true } },
   { path: '**', redirectTo: '' },
 ];

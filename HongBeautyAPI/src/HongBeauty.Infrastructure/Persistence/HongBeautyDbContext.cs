@@ -1,4 +1,5 @@
 using HongBeauty.Domain.Products;
+using HongBeauty.Domain.Orders;
 using HongBeauty.Domain.Users;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,6 +13,10 @@ public sealed class HongBeautyDbContext(DbContextOptions<HongBeautyDbContext> op
     public DbSet<AuthActionToken> AuthActionTokens => Set<AuthActionToken>();
     public DbSet<RolePermissionGrant> RolePermissionGrants => Set<RolePermissionGrant>();
     public DbSet<BootstrapMarker> BootstrapMarkers => Set<BootstrapMarker>();
+    public DbSet<CartItem> CartItems => Set<CartItem>();
+    public DbSet<CustomerAddress> CustomerAddresses => Set<CustomerAddress>();
+    public DbSet<CustomerOrder> Orders => Set<CustomerOrder>();
+    public DbSet<CustomerOrderItem> OrderItems => Set<CustomerOrderItem>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -67,5 +72,46 @@ public sealed class HongBeautyDbContext(DbContextOptions<HongBeautyDbContext> op
         actionToken.Property(x => x.Purpose).HasMaxLength(32).IsRequired();
         actionToken.Property(x => x.TokenHash).HasMaxLength(64).IsRequired();
         actionToken.HasOne<UserAccount>().WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
+
+        var cart = modelBuilder.Entity<CartItem>();
+        cart.ToTable("cart_items", t => t.HasCheckConstraint("CK_cart_items_Quantity", "\"Quantity\" BETWEEN 1 AND 99"));
+        cart.HasKey(x => new { x.UserId, x.ProductId });
+        cart.HasOne<UserAccount>().WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
+        cart.HasOne<Product>().WithMany().HasForeignKey(x => x.ProductId).OnDelete(DeleteBehavior.Restrict);
+
+        var address = modelBuilder.Entity<CustomerAddress>();
+        address.ToTable("customer_addresses"); address.HasKey(x => x.Id);
+        address.HasIndex(x => x.UserId);
+        address.HasOne<UserAccount>().WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
+        address.Property(x => x.Recipient).HasMaxLength(120).IsRequired();
+        address.Property(x => x.Phone).HasMaxLength(20).IsRequired();
+        address.Property(x => x.Line1).HasMaxLength(200).IsRequired();
+        address.Property(x => x.Ward).HasMaxLength(100).IsRequired();
+        address.Property(x => x.District).HasMaxLength(100).IsRequired();
+        address.Property(x => x.Province).HasMaxLength(100).IsRequired();
+
+        var order = modelBuilder.Entity<CustomerOrder>();
+        order.ToTable("orders", t => t.HasCheckConstraint("CK_orders_Totals", "\"Subtotal\" >= 0 AND \"ShippingFee\" >= 0 AND \"Total\" = \"Subtotal\" + \"ShippingFee\""));
+        order.HasKey(x => x.Id); order.HasIndex(x => new { x.UserId, x.CreatedAt });
+        order.HasOne<UserAccount>().WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Restrict);
+        order.HasOne<CustomerAddress>().WithMany().HasForeignKey(x => x.AddressId).OnDelete(DeleteBehavior.Restrict);
+        order.Property(x => x.Recipient).HasMaxLength(120).IsRequired();
+        order.Property(x => x.Phone).HasMaxLength(20).IsRequired();
+        order.Property(x => x.AddressLine).HasMaxLength(520).IsRequired();
+        order.Property(x => x.Status).HasMaxLength(20).IsRequired();
+        order.Property(x => x.PaymentStatus).HasMaxLength(20).IsRequired();
+        order.Property(x => x.ShippingStatus).HasMaxLength(20).IsRequired();
+        order.Property(x => x.Subtotal).HasPrecision(18, 2);
+        order.Property(x => x.ShippingFee).HasPrecision(18, 2);
+        order.Property(x => x.Total).HasPrecision(18, 2);
+        order.HasMany(x => x.Items).WithOne().HasForeignKey(x => x.OrderId).OnDelete(DeleteBehavior.Cascade);
+
+        var item = modelBuilder.Entity<CustomerOrderItem>();
+        item.ToTable("order_items", t => t.HasCheckConstraint("CK_order_items_Quantity_Price", "\"Quantity\" > 0 AND \"UnitPrice\" >= 0"));
+        item.HasKey(x => x.Id);
+        item.Property(x => x.ProductName).HasMaxLength(180).IsRequired();
+        item.Property(x => x.ImageUrl).HasMaxLength(2048);
+        item.Property(x => x.UnitPrice).HasPrecision(18, 2);
+        item.HasOne<Product>().WithMany().HasForeignKey(x => x.ProductId).OnDelete(DeleteBehavior.Restrict);
     }
 }
