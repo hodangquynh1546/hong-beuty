@@ -22,7 +22,7 @@ namespace HongBeauty.Infrastructure.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("HongBeauty.Domain.Products.Product", b =>
+            modelBuilder.Entity("HongBeauty.Domain.Products.Category", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -33,8 +33,50 @@ namespace HongBeauty.Infrastructure.Persistence.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(180)
+                        .HasColumnType("character varying(180)");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Slug")
+                        .IsUnique();
+
+                    b.ToTable("categories", (string)null);
+                });
+
+            modelBuilder.Entity("HongBeauty.Domain.Products.Product", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("CategoryId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
                         .HasMaxLength(5000)
                         .HasColumnType("character varying(5000)");
+
+                    b.Property<string>("ImageUrl")
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
@@ -62,10 +104,15 @@ namespace HongBeauty.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CategoryId");
+
                     b.HasIndex("Slug")
                         .IsUnique();
 
-                    b.ToTable("products", (string)null);
+                    b.ToTable("products", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_products_Price_Stock", "\"Price\" >= 0 AND \"Stock\" >= 0 AND (\"SalePrice\" IS NULL OR (\"SalePrice\" >= 0 AND \"SalePrice\" <= \"Price\"))");
+                        });
                 });
 
             modelBuilder.Entity("HongBeauty.Domain.Users.AuthActionToken", b =>
@@ -184,6 +231,14 @@ namespace HongBeauty.Infrastructure.Persistence.Migrations
                         {
                             t.HasCheckConstraint("CK_users_Role", "\"Role\" IN ('Admin', 'Staff', 'Customer')");
                         });
+                });
+
+            modelBuilder.Entity("HongBeauty.Domain.Products.Product", b =>
+                {
+                    b.HasOne("HongBeauty.Domain.Products.Category", null)
+                        .WithMany()
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("HongBeauty.Domain.Users.AuthActionToken", b =>

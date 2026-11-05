@@ -8,7 +8,7 @@
     <a href="#about">Về chúng tôi</a>
   </nav>
   <div class="account-links">
-    @if (auth.user(); as user) { <a routerLink="/account">{{ user.fullName }}</a> }
+    @if (auth.user(); as user) { @if (user.permissions.includes('catalog.write')) { <a routerLink="/admin/catalog">Quản trị</a> } <a routerLink="/account">{{ user.fullName }}</a> }
     @else { <a routerLink="/login">Đăng nhập</a><a class="contact-link" routerLink="/register">Đăng ký <span aria-hidden="true">↗</span></a> }
   </div>
 </header>

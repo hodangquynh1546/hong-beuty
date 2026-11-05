@@ -6,6 +6,8 @@ public sealed class Product
     public string Name { get; private set; } = string.Empty;
     public string Slug { get; private set; } = string.Empty;
     public string Description { get; private set; } = string.Empty;
+    public Guid? CategoryId { get; private set; }
+    public string? ImageUrl { get; private set; }
     public decimal Price { get; private set; }
     public decimal? SalePrice { get; private set; }
     public int Stock { get; private set; }
@@ -28,6 +30,26 @@ public sealed class Product
     }
 
     public decimal EffectivePrice => SalePrice ?? Price;
+
+    public void Update(Guid? categoryId, string name, string slug, string description,
+        decimal price, decimal? salePrice, int stock, bool isActive, string? imageUrl)
+    {
+        if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(slug))
+            throw new ArgumentException("Product name and slug are required.");
+        if (price < 0 || stock < 0 || salePrice is < 0 || salePrice > price)
+            throw new ArgumentOutOfRangeException(nameof(price), "Invalid price or stock.");
+        CategoryId = categoryId;
+        Name = name.Trim();
+        Slug = slug.Trim().ToLowerInvariant();
+        Description = description.Trim();
+        Price = price;
+        SalePrice = salePrice;
+        Stock = stock;
+        IsActive = isActive;
+        ImageUrl = string.IsNullOrWhiteSpace(imageUrl) ? null : imageUrl.Trim();
+    }
+
+    public void Deactivate() => IsActive = false;
 
     public void Reserve(int quantity)
     {

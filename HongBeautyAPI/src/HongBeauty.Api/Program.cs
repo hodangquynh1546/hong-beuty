@@ -1,6 +1,7 @@
 using HongBeauty.Api.Middleware;
 using HongBeauty.Api.Authorization;
 using HongBeauty.Api.Features.Auth;
+using HongBeauty.Api.Features.Products;
 using HongBeauty.Application.Features.Auth;
 using HongBeauty.Application.Features.Products;
 using HongBeauty.Infrastructure.Features.Auth;
@@ -28,6 +29,8 @@ var connectionString = builder.Configuration.GetConnectionString("Default")
 
 builder.Services.AddDbContext<HongBeautyDbContext>(options => options.UseNpgsql(connectionString));
 builder.Services.AddScoped<IProductCatalog, ProductCatalog>();
+builder.Services.AddScoped<IValidator<CategoryInput>, CategoryInputValidator>();
+builder.Services.AddScoped<IValidator<ProductInput>, ProductInputValidator>();
 builder.Services.AddScoped<IUserAccountStore, UserAccountStore>();
 builder.Services.AddScoped<IAuthActionStore, AuthActionStore>();
 builder.Services.AddSingleton<IPasswordService, Pbkdf2PasswordService>();

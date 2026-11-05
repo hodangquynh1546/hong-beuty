@@ -7,6 +7,7 @@ namespace HongBeauty.Infrastructure.Persistence;
 public sealed class HongBeautyDbContext(DbContextOptions<HongBeautyDbContext> options) : DbContext(options)
 {
     public DbSet<Product> Products => Set<Product>();
+    public DbSet<Category> Categories => Set<Category>();
     public DbSet<UserAccount> Users => Set<UserAccount>();
     public DbSet<AuthActionToken> AuthActionTokens => Set<AuthActionToken>();
     public DbSet<RolePermissionGrant> RolePermissionGrants => Set<RolePermissionGrant>();
@@ -23,7 +24,18 @@ public sealed class HongBeautyDbContext(DbContextOptions<HongBeautyDbContext> op
         product.Property(x => x.Description).HasMaxLength(5000);
         product.Property(x => x.Price).HasPrecision(18, 2);
         product.Property(x => x.SalePrice).HasPrecision(18, 2);
+        product.Property(x => x.ImageUrl).HasMaxLength(2048);
+        product.HasOne<Category>().WithMany().HasForeignKey(x => x.CategoryId).OnDelete(DeleteBehavior.Restrict);
+        product.ToTable(table => table.HasCheckConstraint("CK_products_Price_Stock", "\"Price\" >= 0 AND \"Stock\" >= 0 AND (\"SalePrice\" IS NULL OR (\"SalePrice\" >= 0 AND \"SalePrice\" <= \"Price\"))"));
         product.Ignore(x => x.EffectivePrice);
+
+        var category = modelBuilder.Entity<Category>();
+        category.ToTable("categories");
+        category.HasKey(x => x.Id);
+        category.HasIndex(x => x.Slug).IsUnique();
+        category.Property(x => x.Name).HasMaxLength(180).IsRequired();
+        category.Property(x => x.Slug).HasMaxLength(200).IsRequired();
+        category.Property(x => x.Description).HasMaxLength(2000);
 
         var user = modelBuilder.Entity<UserAccount>();
         user.ToTable("users");

@@ -19,7 +19,7 @@ import { Product, ProductApiService } from '../../core/api/product-api.service';
         <div class="message error" role="alert"><h1>Chưa tải được sản phẩm</h1><p>Vui lòng kiểm tra kết nối rồi thử lại.</p><button type="button" (click)="load()">Thử lại</button></div>
       } @else if (product(); as item) {
         <div class="detail">
-          <div class="visual" aria-label="Hình sản phẩm chưa được cập nhật"><div class="visual-inner" aria-hidden="true">HONG<br />BEAUTY</div><span>HÌNH ẢNH ĐANG CẬP NHẬT</span></div>
+          <div class="visual">@if (item.imageUrl) { <img [src]="item.imageUrl" [alt]="item.name" /> } @else { <div class="visual-inner" aria-hidden="true">HONG<br />BEAUTY</div><span>HÌNH ẢNH ĐANG CẬP NHẬT</span> }</div>
           <div class="info">
             <span class="eyebrow">HONG BEAUTY / SẢN PHẨM</span>
             <h1>{{ item.name }}</h1>
@@ -41,6 +41,7 @@ import { Product, ProductApiService } from '../../core/api/product-api.service';
     .back:hover, .catalog-link:hover { color: #a3746c; }
     .detail { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); gap: clamp(3rem, 7vw, 8rem); align-items: center; }
     .visual { min-height: 570px; background: linear-gradient(145deg, #eadbd3, #c49d91); display: grid; place-items: center; position: relative; overflow: hidden; }
+    .visual img { width: 100%; height: 100%; max-height: 650px; object-fit: cover; }
     .visual:before { content: ''; position: absolute; inset: 5%; border: 1px solid #fff9; }
     .visual-inner { width: 60%; aspect-ratio: .8; border-radius: 50% 50% 0 0; display: grid; place-items: center; text-align: center; font-family: 'Playfair Display', serif; font-size: clamp(2rem, 4vw, 4rem); letter-spacing: .15em; color: #fff9; background: linear-gradient(130deg, #b58a82, #e9cabc); box-shadow: 25px 30px 60px #8c635760; }
     .visual > span { position: absolute; bottom: 1.5rem; right: 1.5rem; color: #fff; letter-spacing: .16em; font-size: .65rem; }

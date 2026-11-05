@@ -6,6 +6,7 @@ import { AuthFormPage } from './features/auth/auth-form.page';
 import { AccountPage } from './features/auth/account.page';
 import { PasswordRecoveryPage } from './features/auth/password-recovery.page';
 import { EmailVerificationPage } from './features/auth/email-verification.page';
+import { CatalogAdminPage } from './features/admin/catalog-admin.page';
 
 export const routes: Routes = [
   { path: '', component: HomePage, title: 'Hong Beauty | Vẻ đẹp theo cách riêng' },
@@ -17,5 +18,6 @@ export const routes: Routes = [
   { path: 'forgot-password', component: PasswordRecoveryPage, title: 'Quên mật khẩu | Hong Beauty' },
   { path: 'reset-password', component: PasswordRecoveryPage, title: 'Đặt lại mật khẩu | Hong Beauty' },
   { path: 'verify-email', component: EmailVerificationPage, title: 'Xác nhận email | Hong Beauty' },
+  { path: 'admin/catalog', component: CatalogAdminPage, title: 'Quản trị danh mục | Hong Beauty' },
   { path: '**', redirectTo: '' },
 ];

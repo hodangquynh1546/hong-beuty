@@ -22,4 +22,22 @@ public sealed class ProductTests
         product.Restore(2);
         Assert.Equal(2, product.Stock);
     }
+
+    [Fact]
+    public void Update_RejectsSalePriceAboveRegularPrice()
+    {
+        var product = new Product("Serum", "serum", "", 250000, 2);
+        Assert.Throws<ArgumentOutOfRangeException>(() => product.Update(null, "Serum", "serum", "", 250000, 260000, 2, true, null));
+        Assert.Equal(250000, product.Price);
+    }
+
+    [Fact]
+    public void Category_Deactivation_KeepsItsIdentity()
+    {
+        var category = new Category("Chăm sóc da", "cham-soc-da", "");
+        var id = category.Id;
+        category.Deactivate();
+        Assert.False(category.IsActive);
+        Assert.Equal(id, category.Id);
+    }
 }
