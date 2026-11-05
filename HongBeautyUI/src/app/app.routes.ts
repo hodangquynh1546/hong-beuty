@@ -1,43 +1,26 @@
 import { Routes } from '@angular/router';
-import { HomePage } from './features/home/home.page';
-import { ProductsPage } from './features/products/products.page';
-import { ProductDetailPage } from './features/products/product-detail.page';
-import { AuthFormPage } from './features/auth/auth-form.page';
-import { AccountPage } from './features/auth/account.page';
-import { PasswordRecoveryPage } from './features/auth/password-recovery.page';
-import { EmailVerificationPage } from './features/auth/email-verification.page';
-import { CatalogAdminPage } from './features/admin/catalog-admin.page';
-import { CartPage } from './features/orders/cart.page';
-import { AddressesPage } from './features/orders/addresses.page';
-import { OrdersPage } from './features/orders/orders.page';
-import { ServicesPage } from './features/services/services.page';
-import { ServicesAdminPage } from './features/admin/services-admin.page';
-import { AppointmentsPage } from './features/services/appointments.page';
-import { ReportsPage } from './features/admin/reports.page';
-import { SupportAdminPage } from './features/admin/support-admin.page';
-import { SavedProductsPage } from './features/products/saved-products.page';
 
 export const routes: Routes = [
-  { path: '', component: HomePage, title: 'Hong Beauty | Vẻ đẹp theo cách riêng' },
-  { path: 'products', component: ProductsPage, title: 'Sản phẩm | Hong Beauty' },
-  { path: 'account/saved-products', component: SavedProductsPage, title: 'Sản phẩm đã lưu | Hong Beauty' },
-  { path: 'services', component: ServicesPage, title: 'Dịch vụ | Hong Beauty' },
-  { path: 'account/appointments', component: AppointmentsPage, title: 'Lịch hẹn | Hong Beauty' },
-  { path: 'products/:id', component: ProductDetailPage, title: 'Chi tiết sản phẩm | Hong Beauty' },
-  { path: 'login', component: AuthFormPage, title: 'Đăng nhập | Hong Beauty' },
-  { path: 'register', component: AuthFormPage, title: 'Đăng ký | Hong Beauty' },
-  { path: 'account', component: AccountPage, title: 'Tài khoản | Hong Beauty' },
-  { path: 'forgot-password', component: PasswordRecoveryPage, title: 'Quên mật khẩu | Hong Beauty' },
-  { path: 'reset-password', component: PasswordRecoveryPage, title: 'Đặt lại mật khẩu | Hong Beauty' },
-  { path: 'verify-email', component: EmailVerificationPage, title: 'Xác nhận email | Hong Beauty' },
-  { path: 'admin/catalog', component: CatalogAdminPage, title: 'Quản trị danh mục | Hong Beauty' },
-  { path: 'admin/services', component: ServicesAdminPage, title: 'Quản trị dịch vụ | Hong Beauty' },
-  { path: 'admin/appointments', component: AppointmentsPage, title: 'Quản lý lịch hẹn | Hong Beauty' },
-  { path: 'admin/reports', component: ReportsPage, title: 'Báo cáo | Hong Beauty' },
-  { path: 'admin/support', component: SupportAdminPage, title: 'Tin nhắn | Hong Beauty' },
-  { path: 'cart', component: CartPage, title: 'Giỏ hàng | Hong Beauty' },
-  { path: 'account/addresses', component: AddressesPage, title: 'Địa chỉ giao hàng | Hong Beauty' },
-  { path: 'account/orders', component: OrdersPage, title: 'Đơn hàng | Hong Beauty' },
-  { path: 'admin/orders', component: OrdersPage, title: 'Quản trị đơn hàng | Hong Beauty', data: { admin: true } },
+  { path: '', loadComponent: () => import('./features/home/home.page').then(m => m.HomePage), title: 'Hong Beauty | Vẻ đẹp theo cách riêng' },
+  { path: 'products', loadComponent: () => import('./features/products/products.page').then(m => m.ProductsPage), title: 'Sản phẩm | Hong Beauty' },
+  { path: 'account/saved-products', loadComponent: () => import('./features/products/saved-products.page').then(m => m.SavedProductsPage), title: 'Sản phẩm đã lưu | Hong Beauty' },
+  { path: 'services', loadComponent: () => import('./features/services/services.page').then(m => m.ServicesPage), title: 'Dịch vụ | Hong Beauty' },
+  { path: 'account/appointments', loadComponent: () => import('./features/services/appointments.page').then(m => m.AppointmentsPage), title: 'Lịch hẹn | Hong Beauty' },
+  { path: 'products/:id', loadComponent: () => import('./features/products/product-detail.page').then(m => m.ProductDetailPage), title: 'Chi tiết sản phẩm | Hong Beauty' },
+  { path: 'login', loadComponent: () => import('./features/auth/auth-form.page').then(m => m.AuthFormPage), title: 'Đăng nhập | Hong Beauty' },
+  { path: 'register', loadComponent: () => import('./features/auth/auth-form.page').then(m => m.AuthFormPage), title: 'Đăng ký | Hong Beauty' },
+  { path: 'account', loadComponent: () => import('./features/auth/account.page').then(m => m.AccountPage), title: 'Tài khoản | Hong Beauty' },
+  { path: 'forgot-password', loadComponent: () => import('./features/auth/password-recovery.page').then(m => m.PasswordRecoveryPage), title: 'Quên mật khẩu | Hong Beauty' },
+  { path: 'reset-password', loadComponent: () => import('./features/auth/password-recovery.page').then(m => m.PasswordRecoveryPage), title: 'Đặt lại mật khẩu | Hong Beauty' },
+  { path: 'verify-email', loadComponent: () => import('./features/auth/email-verification.page').then(m => m.EmailVerificationPage), title: 'Xác nhận email | Hong Beauty' },
+  { path: 'admin/catalog', loadComponent: () => import('./features/admin/catalog-admin.page').then(m => m.CatalogAdminPage), title: 'Quản trị danh mục | Hong Beauty' },
+  { path: 'admin/services', loadComponent: () => import('./features/admin/services-admin.page').then(m => m.ServicesAdminPage), title: 'Quản trị dịch vụ | Hong Beauty' },
+  { path: 'admin/appointments', loadComponent: () => import('./features/services/appointments.page').then(m => m.AppointmentsPage), title: 'Quản lý lịch hẹn | Hong Beauty' },
+  { path: 'admin/reports', loadComponent: () => import('./features/admin/reports.page').then(m => m.ReportsPage), title: 'Báo cáo | Hong Beauty' },
+  { path: 'admin/support', loadComponent: () => import('./features/admin/support-admin.page').then(m => m.SupportAdminPage), title: 'Tin nhắn | Hong Beauty' },
+  { path: 'cart', loadComponent: () => import('./features/orders/cart.page').then(m => m.CartPage), title: 'Giỏ hàng | Hong Beauty' },
+  { path: 'account/addresses', loadComponent: () => import('./features/orders/addresses.page').then(m => m.AddressesPage), title: 'Địa chỉ giao hàng | Hong Beauty' },
+  { path: 'account/orders', loadComponent: () => import('./features/orders/orders.page').then(m => m.OrdersPage), title: 'Đơn hàng | Hong Beauty' },
+  { path: 'admin/orders', loadComponent: () => import('./features/orders/orders.page').then(m => m.OrdersPage), title: 'Quản trị đơn hàng | Hong Beauty', data: { admin: true } },
   { path: '**', redirectTo: '' },
 ];
