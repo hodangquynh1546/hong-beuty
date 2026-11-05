@@ -2,13 +2,14 @@ using HongBeauty.Domain.Users;
 
 namespace HongBeauty.Application.Features.Auth;
 
-public sealed record AuthUserDto(Guid Id, string FullName, string Email, string[] Permissions);
+public sealed record AuthUserDto(Guid Id, string FullName, string Email, string[] Permissions, bool EmailVerified);
 
 public interface IUserAccountStore
 {
     Task<UserAccount?> FindByEmailAsync(string normalizedEmail, CancellationToken cancellationToken);
     Task<UserAccount?> FindByIdAsync(Guid id, CancellationToken cancellationToken);
     Task AddAsync(UserAccount user, CancellationToken cancellationToken);
+    Task SaveAsync(CancellationToken cancellationToken);
 }
 
 public interface IPasswordService
@@ -44,5 +45,5 @@ public sealed class AuthService(IUserAccountStore users, IPasswordService passwo
         return user is null ? null : ToDto(user);
     }
 
-    private static AuthUserDto ToDto(UserAccount user) => new(user.Id, user.FullName, user.Email, user.Permissions);
+    private static AuthUserDto ToDto(UserAccount user) => new(user.Id, user.FullName, user.Email, user.Permissions, user.EmailVerified);
 }

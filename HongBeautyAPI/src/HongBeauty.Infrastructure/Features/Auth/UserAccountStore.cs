@@ -23,4 +23,6 @@ public sealed class UserAccountStore(HongBeautyDbContext db) : IUserAccountStore
             throw new DuplicateEmailException();
         }
     }
+
+    public Task SaveAsync(CancellationToken cancellationToken) => db.SaveChangesAsync(cancellationToken);
 }

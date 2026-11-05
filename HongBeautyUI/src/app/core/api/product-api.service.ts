@@ -18,4 +18,8 @@ export class ProductApiService {
   list(search = ''): Observable<Product[]> {
     return this.http.get<Product[]>('/api/v1/products', { params: search ? { search } : {} });
   }
+
+  get(id: string): Observable<Product> {
+    return this.http.get<Product>(`/api/v1/products/${encodeURIComponent(id)}`);
+  }
 }

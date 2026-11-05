@@ -8,6 +8,7 @@ public sealed class HongBeautyDbContext(DbContextOptions<HongBeautyDbContext> op
 {
     public DbSet<Product> Products => Set<Product>();
     public DbSet<UserAccount> Users => Set<UserAccount>();
+    public DbSet<AuthActionToken> AuthActionTokens => Set<AuthActionToken>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -31,5 +32,14 @@ public sealed class HongBeautyDbContext(DbContextOptions<HongBeautyDbContext> op
         user.Property(x => x.NormalizedEmail).HasMaxLength(254).IsRequired();
         user.Property(x => x.PasswordHash).HasMaxLength(512).IsRequired();
         user.Property(x => x.Permissions).HasColumnType("text[]").IsRequired();
+        user.Property(x => x.SecurityStamp).IsRequired();
+
+        var actionToken = modelBuilder.Entity<AuthActionToken>();
+        actionToken.ToTable("auth_action_tokens");
+        actionToken.HasKey(x => x.Id);
+        actionToken.HasIndex(x => x.TokenHash).IsUnique();
+        actionToken.Property(x => x.Purpose).HasMaxLength(32).IsRequired();
+        actionToken.Property(x => x.TokenHash).HasMaxLength(64).IsRequired();
+        actionToken.HasOne<UserAccount>().WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
     }
 }

@@ -35,6 +35,7 @@ public sealed class LoginRequestValidator : AbstractValidator<LoginRequest>
 [Route("api/v1/auth")]
 public sealed class AuthController(
     AuthService auth,
+    IUserAccountStore users,
     IValidator<RegisterRequest> registerValidator,
     IValidator<LoginRequest> loginValidator) : ControllerBase
 {
@@ -90,12 +91,14 @@ public sealed class AuthController(
         return user is null ? Unauthorized() : Ok(user);
     }
 
-    private Task SignInAsync(AuthUserDto user)
+    private async Task SignInAsync(AuthUserDto user)
     {
+        var account = await users.FindByIdAsync(user.Id, HttpContext.RequestAborted)
+            ?? throw new InvalidOperationException("Account disappeared after authentication.");
         var identity = new ClaimsIdentity(
-            [new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())],
+            [new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()), new Claim(ClaimTypes.Sid, account.SecurityStamp.ToString())],
             CookieAuthenticationDefaults.AuthenticationScheme);
         var principal = new ClaimsPrincipal(identity);
-        return HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+        await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
     }
 }

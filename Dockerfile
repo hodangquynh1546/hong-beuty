@@ -21,4 +21,5 @@ COPY --from=build /out ./
 COPY --from=ui /src/HongBeautyUI/dist/HongBeautyUI/browser ./wwwroot/
 ENV ASPNETCORE_URLS=http://+:8080
 EXPOSE 8080
+USER $APP_UID
 ENTRYPOINT ["dotnet", "HongBeauty.Api.dll"]

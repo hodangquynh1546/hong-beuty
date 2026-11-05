@@ -9,6 +9,7 @@ using HongBeauty.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.RateLimiting;
 using System.Threading.RateLimiting;
@@ -28,8 +29,14 @@ var connectionString = builder.Configuration.GetConnectionString("Default")
 builder.Services.AddDbContext<HongBeautyDbContext>(options => options.UseNpgsql(connectionString));
 builder.Services.AddScoped<IProductCatalog, ProductCatalog>();
 builder.Services.AddScoped<IUserAccountStore, UserAccountStore>();
+builder.Services.AddScoped<IAuthActionStore, AuthActionStore>();
 builder.Services.AddSingleton<IPasswordService, Pbkdf2PasswordService>();
 builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<AuthLifecycleService>();
+if (builder.Environment.IsDevelopment())
+    builder.Services.AddSingleton<IAccountNotificationSender, DevelopmentOutboxNotificationSender>();
+else
+    builder.Services.AddSingleton<IAccountNotificationSender, SmtpAccountNotificationSender>();
 builder.Services.AddScoped<IValidator<RegisterRequest>, RegisterRequestValidator>();
 builder.Services.AddScoped<IValidator<LoginRequest>, LoginRequestValidator>();
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
@@ -52,6 +59,18 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         {
             context.Response.StatusCode = StatusCodes.Status403Forbidden;
             return Task.CompletedTask;
+        };
+        options.Events.OnValidatePrincipal = async context =>
+        {
+            var idValue = context.Principal?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var stampValue = context.Principal?.FindFirst(System.Security.Claims.ClaimTypes.Sid)?.Value;
+            var store = context.HttpContext.RequestServices.GetRequiredService<IUserAccountStore>();
+            var user = Guid.TryParse(idValue, out var id) ? await store.FindByIdAsync(id, context.HttpContext.RequestAborted) : null;
+            if (user is null || user.SecurityStamp.ToString() != stampValue)
+            {
+                context.RejectPrincipal();
+                await context.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            }
         };
     });
 builder.Services.AddAuthorization();

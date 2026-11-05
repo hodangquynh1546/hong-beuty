@@ -8,6 +8,8 @@ public sealed class UserAccount
     public string NormalizedEmail { get; private set; } = string.Empty;
     public string PasswordHash { get; private set; } = string.Empty;
     public string[] Permissions { get; private set; } = [];
+    public bool EmailVerified { get; private set; }
+    public Guid SecurityStamp { get; private set; } = Guid.NewGuid();
     public DateTimeOffset CreatedAt { get; private set; } = DateTimeOffset.UtcNow;
 
     private UserAccount() { }
@@ -23,4 +25,12 @@ public sealed class UserAccount
     public static string NormalizeEmail(string email) => email.Trim().ToUpperInvariant();
 
     public bool HasPermission(string permission) => Permissions.Contains(permission, StringComparer.Ordinal);
+
+    public void VerifyEmail() => EmailVerified = true;
+
+    public void ChangePassword(string passwordHash)
+    {
+        PasswordHash = passwordHash;
+        SecurityStamp = Guid.NewGuid();
+    }
 }

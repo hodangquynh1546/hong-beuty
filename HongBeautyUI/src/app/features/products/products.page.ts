@@ -1,17 +1,18 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
 import { Product, ProductApiService } from '../../core/api/product-api.service';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-products-page',
-  imports: [CurrencyPipe],
+  imports: [CurrencyPipe, RouterLink],
   template: `<section class="page"><span class="eyebrow">HONG BEAUTY / SẢN PHẨM</span><h1>Chọn điều phù hợp với bạn.</h1>
     <p>Danh mục được cập nhật trực tiếp từ hệ thống.</p>
     <label class="search">Tìm sản phẩm <input type="search" placeholder="Nhập tên sản phẩm" #term (input)="load(term.value)" /></label>
     @if (loading()) { <div class="message" role="status">Đang tải sản phẩm…</div> }
     @else if (error()) { <div class="message error" role="alert">Không tải được sản phẩm. <button (click)="load(term.value)">Thử lại</button></div> }
     @else if (products().length === 0) { <div class="message">Chưa có sản phẩm phù hợp.</div> }
-    @else { <div class="grid">@for (product of products(); track product.id) { <article><div class="tile" aria-hidden="true">HB</div><h2>{{ product.name }}</h2><p>{{ product.description }}</p><strong>{{ (product.salePrice ?? product.price) | currency:'VND':'symbol':'1.0-0':'vi' }}</strong></article> }</div> }
+    @else { <div class="grid">@for (product of products(); track product.id) { <article><a class="product-link" [routerLink]="['/products', product.id]" [attr.aria-label]="'Xem chi tiết ' + product.name"><div class="tile" aria-hidden="true">HB</div><h2>{{ product.name }}</h2></a><p>{{ product.description }}</p><strong>{{ (product.salePrice ?? product.price) | currency:'VND':'symbol':'1.0-0':'vi' }}</strong></article> }</div> }
   </section>`,
   styles: [`
     .page { max-width: 1250px; margin: auto; padding: 5rem 4vw 8rem; min-height: 65vh; }
@@ -27,6 +28,8 @@ import { Product, ProductApiService } from '../../core/api/product-api.service';
     article { background: white; padding-bottom: 1.5rem; }
     article h2,article p,article strong { margin-left: 1rem; margin-right: 1rem; }
     article h2 { font-size: 1.4rem; }
+    .product-link { color: inherit; text-decoration: none; display: block; }
+    .product-link:hover h2, .product-link:focus-visible h2 { color: #a3746c; }
     .tile { aspect-ratio: 1; display: grid; place-items: center; background: linear-gradient(145deg,#eadbd3,#b68f88); color: #fff9; letter-spacing: .3em; font-family: 'Playfair Display',serif; font-size: 3rem; }
   `],
 })
