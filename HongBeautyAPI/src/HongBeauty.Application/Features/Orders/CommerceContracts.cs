@@ -19,6 +19,8 @@ public interface ICommerceStore
     Task<AddressDto> AddAddressAsync(Guid userId, AddressInput input, CancellationToken ct);
     Task<bool> DeleteAddressAsync(Guid userId, Guid addressId, CancellationToken ct);
     Task<OrderDto> CheckoutAsync(Guid userId, Guid addressId, CancellationToken ct);
+    Task<OrderDto> CheckoutSelectedAsync(Guid userId, Guid addressId, IReadOnlyCollection<Guid> productIds, CancellationToken ct);
+    Task<OrderDto> BuyNowAsync(Guid userId, Guid addressId, Guid productId, int quantity, CancellationToken ct);
     Task<IReadOnlyList<OrderDto>> GetOrdersAsync(Guid userId, CancellationToken ct);
     Task<OrderDto?> GetOrderAsync(Guid userId, Guid orderId, CancellationToken ct);
     Task<OrderDto?> CancelOrderAsync(Guid userId, Guid orderId, CancellationToken ct);

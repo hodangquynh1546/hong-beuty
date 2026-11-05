@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AddressInput, DeliveryAddress, OrderApiService } from '../../core/api/order-api.service';
 
 @Component({
@@ -25,6 +25,7 @@ import { AddressInput, DeliveryAddress, OrderApiService } from '../../core/api/o
 })
 export class AddressesPage implements OnInit {
   private readonly api = inject(OrderApiService);
+  private readonly router = inject(Router);
   addresses: DeliveryAddress[] = [];
   draft: AddressInput = { recipient: '', phone: '', line1: '', ward: '', district: '', province: '' };
   loading = true; busy = false; error = ''; notice = '';
@@ -36,7 +37,7 @@ export class AddressesPage implements OnInit {
   save(): void {
     if (Object.values(this.draft).some(value => !value.trim())) { this.error = 'Vui lòng điền đầy đủ địa chỉ.'; return; }
     this.busy = true; this.error = ''; this.notice = '';
-    this.api.createAddress(this.draft).subscribe({next: address => { this.addresses = [...this.addresses, address]; this.draft = { recipient: '', phone: '', line1: '', ward: '', district: '', province: '' }; this.busy = false; this.notice = 'Đã lưu địa chỉ.'; }, error: () => { this.busy = false; this.error = 'Không lưu được địa chỉ.'; }});
+    this.api.createAddress(this.draft).subscribe({next: address => { this.addresses = [...this.addresses, address]; this.draft = { recipient: '', phone: '', line1: '', ward: '', district: '', province: '' }; this.busy = false; this.notice = 'Đã lưu địa chỉ.'; const previous = history.state?.returnUrl; void this.router.navigateByUrl(typeof previous === 'string' && previous.startsWith('/') && !previous.startsWith('//') ? previous : '/cart'); }, error: () => { this.busy = false; this.error = 'Không lưu được địa chỉ.'; }});
   }
   remove(id: string): void {
     this.busy = true; this.error = ''; this.notice = '';

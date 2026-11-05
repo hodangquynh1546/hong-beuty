@@ -8,7 +8,8 @@ using Microsoft.AspNetCore.Mvc;
 namespace HongBeauty.Api.Features.Orders;
 
 public sealed record CartQuantityRequest(int Quantity);
-public sealed record CheckoutRequest(Guid AddressId);
+public sealed record CheckoutRequest(Guid AddressId, IReadOnlyList<Guid>? SelectedProductIds = null);
+public sealed record BuyNowRequest(Guid AddressId, Guid ProductId, int Quantity);
 public sealed record OrderStatusRequest(string Status);
 
 public sealed class AddressInputValidator : AbstractValidator<AddressInput>
@@ -82,7 +83,23 @@ public sealed class OrdersController(ICommerceStore store) : ControllerBase
         if (request.AddressId == Guid.Empty) return BadRequest(new ProblemDetails { Title = "Address is required." });
         try
         {
-            var order = await store.CheckoutAsync(UserId, request.AddressId, ct);
+            var order = request.SelectedProductIds is null
+                ? await store.CheckoutAsync(UserId, request.AddressId, ct)
+                : await store.CheckoutSelectedAsync(UserId, request.AddressId, request.SelectedProductIds, ct);
+            return Created($"/api/v1/orders/{order.Id}", order);
+        }
+        catch (CommerceNotFoundException) { return NotFound(); }
+        catch (CommerceConflictException ex) { return Conflict(new ProblemDetails { Title = ex.Message }); }
+    }
+
+    [HttpPost("buy-now")]
+    public async Task<IActionResult> BuyNow(BuyNowRequest request, CancellationToken ct)
+    {
+        if (request.AddressId == Guid.Empty || request.ProductId == Guid.Empty || request.Quantity is < 1 or > 99)
+            return BadRequest(new ProblemDetails { Title = "Chọn sản phẩm, số lượng và địa chỉ hợp lệ." });
+        try
+        {
+            var order = await store.BuyNowAsync(UserId, request.AddressId, request.ProductId, request.Quantity, ct);
             return Created($"/api/v1/orders/{order.Id}", order);
         }
         catch (CommerceNotFoundException) { return NotFound(); }

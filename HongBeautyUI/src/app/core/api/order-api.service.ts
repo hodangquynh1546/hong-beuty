@@ -60,8 +60,11 @@ export class OrderApiService {
   removeAddress(id: string): Observable<void> {
     return this.http.delete<void>(`/api/v1/addresses/${encodeURIComponent(id)}`, { withCredentials: true });
   }
-  checkout(addressId: string): Observable<Order> {
-    return this.http.post<Order>('/api/v1/orders', { addressId }, { withCredentials: true });
+  checkout(addressId: string, selectedProductIds?: string[]): Observable<Order> {
+    return this.http.post<Order>('/api/v1/orders', { addressId, selectedProductIds }, { withCredentials: true });
+  }
+  buyNow(addressId: string, productId: string, quantity: number): Observable<Order> {
+    return this.http.post<Order>('/api/v1/orders/buy-now', { addressId, productId, quantity }, { withCredentials: true });
   }
   orders(): Observable<Order[]> {
     return this.http.get<Order[]>('/api/v1/orders', { withCredentials: true });

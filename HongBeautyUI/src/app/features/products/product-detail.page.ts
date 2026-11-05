@@ -1,10 +1,10 @@
 import { CurrencyPipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, DestroyRef, inject, signal } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { Product, ProductApiService } from '../../core/api/product-api.service';
-import { OrderApiService } from '../../core/api/order-api.service';
+import { DeliveryAddress, OrderApiService } from '../../core/api/order-api.service';
 import { AuthService } from '../../core/auth/auth.service';
 
 @Component({
@@ -30,7 +30,8 @@ import { AuthService } from '../../core/auth/auth.service';
               @if (item.salePrice !== null && item.salePrice < item.price) { <del>{{ item.price | currency:'VND':'symbol':'1.0-0':'vi' }}</del> }
             </div>
             <p class="availability">{{ item.stock > 0 ? 'Còn hàng' : 'Hết hàng' }}</p>
-            @if (auth.user()?.role !== 'Admin') { <div class="purchase-actions"><label for="quantity">Số lượng <input id="quantity" type="number" min="1" [max]="item.stock < 99 ? item.stock : 99" [value]="quantity()" (input)="setQuantity($event, item.stock)" /></label><button class="add-button" [class.added]="addedMotion()" type="button" [disabled]="item.stock === 0 || adding()" (click)="addToCart(item.id)"><span class="material-symbols-outlined" aria-hidden="true">shopping_bag</span> {{ adding() ? 'Đang thêm…' : 'Thêm vào giỏ hàng' }}</button></div> }
+            @if (auth.user()?.role !== 'Admin') { <div class="purchase-actions"><label for="quantity">Số lượng <input id="quantity" type="number" min="1" [max]="item.stock < 99 ? item.stock : 99" [value]="quantity()" (input)="setQuantity($event, item.stock)" /></label><button class="add-button" [class.added]="addedMotion()" type="button" [disabled]="item.stock === 0 || adding()" (click)="addToCart(item.id)"><span class="material-symbols-outlined" aria-hidden="true">shopping_bag</span> {{ adding() ? 'Đang thêm…' : 'Thêm vào giỏ hàng' }}</button><button type="button" [disabled]="item.stock === 0 || buying()" (click)="startBuyNow()"><span class="material-symbols-outlined" aria-hidden="true">bolt</span> Mua ngay</button></div> }
+            @if (buyDialog()) { <div class="buy-panel"><h2>Mua ngay {{ quantity() }} sản phẩm</h2>@if (addresses().length) { <label>Địa chỉ nhận hàng <select [value]="addressId" (change)="addressId = $any($event.target).value">@for (address of addresses(); track address.id) { <option [value]="address.id">{{ address.recipient }} · {{ address.line1 }}, {{ address.ward }}</option> }</select></label><p>Tổng tạm tính: {{ (item.salePrice ?? item.price) * quantity() | currency:'VND':'symbol':'1.0-0':'vi' }} · Phí vận chuyển: 0 ₫</p><button type="button" [disabled]="buying() || !addressId" (click)="confirmBuyNow(item.id)">{{ buying() ? 'Đang tạo đơn…' : 'Xác nhận mua ngay' }}</button> } @else { <p>Thêm địa chỉ nhận hàng trước khi mua.</p><a routerLink="/account/addresses" [state]="{ returnUrl: '/products/' + item.id }">Thêm địa chỉ</a> }<button type="button" class="secondary" (click)="buyDialog.set(false)">Đóng</button></div> }
             @if (addedMotion()) { <span class="cart-spark" aria-hidden="true">✦</span> }
             @if (cartNotice()) { <p role="status">{{ cartNotice() }} <a routerLink="/cart">Xem giỏ hàng</a></p> }
             @if (cartError()) { <p role="alert">{{ cartError() }}</p> }
@@ -68,7 +69,7 @@ import { AuthService } from '../../core/auth/auth.service';
     .error { background: #f8e2e1; }
     button { border: 0; background: #3d2833; color: #fff; padding: 1rem 1.5rem; cursor: pointer; border-radius: 4px; box-shadow: 0 10px 24px #3d28332a; }
     button:hover:not(:disabled) { background: #74485a; }
-    .purchase-actions { display: flex; gap: .8rem; align-items: end; flex-wrap: wrap; }.purchase-actions label { font-size: .75rem; color: #7c625d; }.purchase-actions input { display: block; width: 80px; margin-top: .4rem; padding: .9rem; border: 1px solid #d9c7c8; border-radius: 6px; font: inherit; }.add-button.added { animation: cart-pop .65s ease; }.cart-spark { position: absolute; color: #b57483; font-size: 2rem; animation: spark-away .8s ease forwards; pointer-events: none; }@keyframes cart-pop{50%{transform:scale(1.06)}}@keyframes spark-away{to{transform:translate(70px,-70px) scale(.3);opacity:0}}
+    .purchase-actions { display: flex; gap: .8rem; align-items: end; flex-wrap: wrap; }.purchase-actions label { font-size: .75rem; color: #7c625d; }.purchase-actions input { display: block; width: 80px; margin-top: .4rem; padding: .9rem; border: 1px solid #d9c7c8; border-radius: 6px; font: inherit; }.purchase-actions button{display:inline-flex;align-items:center;gap:.35rem}.buy-panel{margin-top:1rem;padding:1.2rem;background:#f7eff1;border:1px solid #e5d4d9;border-radius:12px}.buy-panel label{display:block}.buy-panel select{display:block;width:100%;padding:.8rem;margin:.6rem 0;border:1px solid #d9c7c8;border-radius:7px}.buy-panel .secondary{background:transparent;color:#58384a;box-shadow:none}.buy-panel a{color:#58384a}.add-button.added { animation: cart-pop .65s ease; }.cart-spark { position: absolute; color: #b57483; font-size: 2rem; animation: spark-away .8s ease forwards; pointer-events: none; }@keyframes cart-pop{50%{transform:scale(1.06)}}@keyframes spark-away{to{transform:translate(70px,-70px) scale(.3);opacity:0}}
     @media(prefers-reduced-motion:reduce){ .add-button.added,.cart-spark { animation: none; } }
     @media (max-width: 760px) { .page { padding: 2rem 5vw 5rem; } .detail { grid-template-columns: 1fr; gap: 2.5rem; } .visual { min-height: 360px; } }
   `],
@@ -76,6 +77,7 @@ import { AuthService } from '../../core/auth/auth.service';
 export class ProductDetailPage {
   private readonly api = inject(ProductApiService);
   private readonly orders = inject(OrderApiService);
+  private readonly router = inject(Router);
   readonly auth = inject(AuthService);
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
@@ -90,6 +92,25 @@ export class ProductDetailPage {
   readonly cartError = signal('');
   readonly quantity = signal(1);
   readonly addedMotion = signal(false);
+  readonly buyDialog = signal(false);
+  readonly buying = signal(false);
+  readonly addresses = signal<DeliveryAddress[]>([]);
+  addressId = '';
+
+  startBuyNow(): void {
+    if (!this.auth.user()) { this.cartError.set('Vui lòng đăng nhập trước khi mua.'); return; }
+    this.cartError.set(''); this.buyDialog.set(true);
+    this.orders.addresses().subscribe({ next: rows => { this.addresses.set(rows); this.addressId = rows[0]?.id ?? ''; }, error: () => this.cartError.set('Không tải được địa chỉ nhận hàng.') });
+  }
+
+  confirmBuyNow(productId: string): void {
+    if (!this.addressId || this.buying()) return;
+    this.buying.set(true); this.cartError.set('');
+    this.orders.buyNow(this.addressId, productId, this.quantity()).subscribe({
+      next: () => { this.buying.set(false); void this.router.navigateByUrl('/account/orders'); },
+      error: () => { this.buying.set(false); this.cartError.set('Không thể tạo đơn. Vui lòng kiểm tra tồn kho và địa chỉ.'); },
+    });
+  }
 
   setQuantity(event: Event, stock: number): void {
     const raw = Number((event.target as HTMLInputElement).value);

@@ -63,7 +63,13 @@ public sealed class CommerceStore(HongBeautyDbContext db) : ICommerceStore
         return true;
     }
 
-    public async Task<OrderDto> CheckoutAsync(Guid userId, Guid addressId, CancellationToken ct)
+    public Task<OrderDto> CheckoutAsync(Guid userId, Guid addressId, CancellationToken ct) =>
+        CheckoutCartAsync(userId, addressId, null, ct);
+
+    public Task<OrderDto> CheckoutSelectedAsync(Guid userId, Guid addressId, IReadOnlyCollection<Guid> productIds, CancellationToken ct) =>
+        CheckoutCartAsync(userId, addressId, productIds, ct);
+
+    private async Task<OrderDto> CheckoutCartAsync(Guid userId, Guid addressId, IReadOnlyCollection<Guid>? productIds, CancellationToken ct)
     {
         await using var tx = await db.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct);
         var address = await db.CustomerAddresses.AsNoTracking().FirstOrDefaultAsync(x => x.Id == addressId && x.UserId == userId, ct)
@@ -71,6 +77,13 @@ public sealed class CommerceStore(HongBeautyDbContext db) : ICommerceStore
         // Lock this customer's cart before reading it: concurrent checkouts cannot consume it twice.
         var cart = await db.CartItems.FromSqlInterpolated($"SELECT * FROM cart_items WHERE \"UserId\" = {userId} FOR UPDATE")
             .OrderBy(x => x.ProductId).ToListAsync(ct);
+        if (productIds is not null)
+        {
+            var selected = productIds.Distinct().ToHashSet();
+            if (selected.Count == 0 || selected.Count > 99 || !selected.IsSubsetOf(cart.Select(x => x.ProductId)))
+                throw new CommerceConflictException("Select available cart items.");
+            cart = cart.Where(x => selected.Contains(x.ProductId)).ToList();
+        }
         if (cart.Count == 0) throw new CommerceConflictException("Cart is empty.");
         var lines = new List<CustomerOrderItem>();
         foreach (var item in cart.OrderBy(x => x.ProductId))
@@ -87,6 +100,26 @@ public sealed class CommerceStore(HongBeautyDbContext db) : ICommerceStore
         var order = new CustomerOrder(userId, address, lines, 0m);
         db.Orders.Add(order);
         db.CartItems.RemoveRange(cart);
+        await db.SaveChangesAsync(ct);
+        await tx.CommitAsync(ct);
+        return MapOrder(order);
+    }
+
+    public async Task<OrderDto> BuyNowAsync(Guid userId, Guid addressId, Guid productId, int quantity, CancellationToken ct)
+    {
+        if (productId == Guid.Empty || quantity is < 1 or > 99)
+            throw new CommerceConflictException("Invalid product quantity.");
+        await using var tx = await db.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct);
+        var address = await db.CustomerAddresses.AsNoTracking().FirstOrDefaultAsync(x => x.Id == addressId && x.UserId == userId, ct)
+            ?? throw new CommerceNotFoundException("Address not found.");
+        var product = await db.Products.FromSqlInterpolated($"SELECT * FROM products WHERE \"Id\" = {productId} FOR UPDATE")
+            .SingleOrDefaultAsync(ct);
+        if (product is null || !product.IsActive) throw new CommerceConflictException("Product is unavailable.");
+        if (quantity > product.Stock) throw new CommerceConflictException("Insufficient inventory.");
+        product.Reserve(quantity);
+        var line = new CustomerOrderItem(product.Id, product.Name, product.ImageUrl, product.EffectivePrice, quantity, product.CostPrice);
+        var order = new CustomerOrder(userId, address, [line], 0m);
+        db.Orders.Add(order);
         await db.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
         return MapOrder(order);
