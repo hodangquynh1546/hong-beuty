@@ -2,6 +2,7 @@ import { CurrencyPipe } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import { ProductApiService, Product, ProductInput, Category, CategoryInput } from '../../core/api/product-api.service';
 import { AuthService, authErrorMessage } from '../../core/auth/auth.service';
 
@@ -10,6 +11,15 @@ const emptyProduct = (): ProductInput => ({
   stock: 0, isActive: true, imageUrl: null,
 });
 const emptyCategory = (): CategoryInput => ({ name: '', slug: '', description: '', isActive: true });
+const makeSlug = (name: string): string => name.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+  .replace(/[đĐ]/g, 'd').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 150);
+const uniqueSlug = (name: string, existing: { slug: string }[]): string => {
+  const base = makeSlug(name) || `muc-${Date.now()}`;
+  const used = new Set(existing.map(item => item.slug));
+  let slug = base;
+  for (let index = 2; used.has(slug); index++) slug = `${base}-${index}`;
+  return slug;
+};
 
 @Component({
   selector: 'app-catalog-admin-page',
@@ -46,12 +56,10 @@ export class CatalogAdminPage implements OnInit {
     if (!this.canManage) { this.loading.set(false); return; }
     this.loading.set(true);
     this.error.set('');
-    if (this.canManageCategories) {
-      this.api.adminCategories().subscribe({
-        next: categories => { this.categories.set(categories); this.loadProducts(); },
-        error: error => { this.error.set(authErrorMessage(error, 'Không tải được danh mục.')); this.loading.set(false); },
-      });
-    } else this.loadProducts();
+    forkJoin({ categories: this.api.adminCategories(), products: this.api.adminProducts() }).subscribe({
+      next: ({ categories, products }) => { this.categories.set(categories); this.products.set(products); this.loading.set(false); },
+      error: error => { this.error.set(authErrorMessage(error, 'Không tải được dữ liệu quản trị.')); this.loading.set(false); },
+    });
   }
 
   private loadProducts(): void {
@@ -84,7 +92,7 @@ export class CatalogAdminPage implements OnInit {
     this.error.set(''); this.notice.set('');
     const input: ProductInput = {
       ...this.productForm,
-      name: this.productForm.name.trim(), slug: this.productForm.slug.trim(),
+      name: this.productForm.name.trim(), slug: this.productEditId ? this.productForm.slug.trim() : uniqueSlug(this.productForm.name, this.products()),
       description: this.productForm.description.trim(),
       categoryId: this.productForm.categoryId || null,
       imageUrl: this.productForm.imageUrl?.trim() || null,
@@ -102,7 +110,7 @@ export class CatalogAdminPage implements OnInit {
       ? this.api.updateProduct(this.productEditId, input)
       : this.api.createProduct(input);
     request.subscribe({
-      next: () => { this.saving.set(false); this.notice.set('Đã lưu sản phẩm.'); this.resetProduct(); this.loadProducts(); },
+      next: product => { this.saving.set(false); this.notice.set('Đã lưu sản phẩm.'); this.products.update(items => this.productEditId ? items.map(x => x.id === product.id ? product : x) : [...items, product].sort((a, b) => a.name.localeCompare(b.name, 'vi'))); this.resetProduct(); },
       error: error => { this.saving.set(false); this.error.set(authErrorMessage(error, 'Không lưu được sản phẩm.')); },
     });
   }
@@ -128,7 +136,7 @@ export class CatalogAdminPage implements OnInit {
     this.error.set(''); this.notice.set('');
     const input: CategoryInput = {
       ...this.categoryForm, name: this.categoryForm.name.trim(),
-      slug: this.categoryForm.slug.trim(), description: this.categoryForm.description.trim(),
+      slug: this.categoryEditId ? this.categoryForm.slug.trim() : uniqueSlug(this.categoryForm.name, this.categories()), description: this.categoryForm.description.trim(),
     };
     if (!input.name || !input.slug) { this.error.set('Nhập tên và đường dẫn danh mục.'); return; }
     this.saving.set(true);
@@ -136,7 +144,7 @@ export class CatalogAdminPage implements OnInit {
       ? this.api.updateCategory(this.categoryEditId, input)
       : this.api.createCategory(input);
     request.subscribe({
-      next: () => { this.saving.set(false); this.notice.set('Đã lưu danh mục.'); this.resetCategory(); this.load(); },
+      next: category => { this.saving.set(false); this.notice.set('Đã lưu danh mục.'); this.categories.update(items => this.categoryEditId ? items.map(x => x.id === category.id ? category : x) : [...items, category].sort((a, b) => a.name.localeCompare(b.name, 'vi'))); this.resetCategory(); },
       error: error => { this.saving.set(false); this.error.set(authErrorMessage(error, 'Không lưu được danh mục.')); },
     });
   }

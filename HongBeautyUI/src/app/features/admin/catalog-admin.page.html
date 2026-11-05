@@ -14,7 +14,7 @@
         <form class="editor" (ngSubmit)="saveProduct()" #productFormRef="ngForm">
           <div class="panel-title"><h2>{{ productEditId ? 'Sửa sản phẩm' : 'Thêm sản phẩm' }}</h2><span>{{ productEditId ? 'Đang chỉnh sửa' : 'Sản phẩm mới' }}</span></div>
           <label>Tên sản phẩm <input name="productName" [(ngModel)]="productForm.name" required maxlength="160" placeholder="Ví dụ: Serum dưỡng ẩm" /></label>
-          <label>Đường dẫn (slug) <input name="productSlug" [(ngModel)]="productForm.slug" required maxlength="160" pattern="[a-z0-9]+(?:-[a-z0-9]+)*" placeholder="serum-duong-am" /></label>
+          @if (productEditId) { <p class="form-hint">Đường dẫn: /{{ productForm.slug }}</p> } @else { <p class="form-hint">Đường dẫn sẽ được tạo tự động từ tên sản phẩm.</p> }
           <label>Danh mục <select name="productCategory" [(ngModel)]="productForm.categoryId"><option [ngValue]="null">Chưa phân loại</option>@for (category of categories(); track category.id) { @if (category.isActive) { <option [ngValue]="category.id">{{ category.name }}</option> } }</select></label>
           <label>Mô tả <textarea name="productDescription" [(ngModel)]="productForm.description" rows="4" maxlength="3000" placeholder="Thông tin sản phẩm"></textarea></label>
           <div class="field-row"><label>Giá bán (₫) <input name="productPrice" type="number" min="0" step="1000" [(ngModel)]="productForm.price" required /></label><label>Giá khuyến mãi (₫) <input name="productSalePrice" type="number" min="0" step="1000" [(ngModel)]="productForm.salePrice" /></label></div>
@@ -32,7 +32,7 @@
         <form class="editor" (ngSubmit)="saveCategory()" #categoryFormRef="ngForm">
           <div class="panel-title"><h2>{{ categoryEditId ? 'Sửa danh mục' : 'Thêm danh mục' }}</h2><span>{{ categoryEditId ? 'Đang chỉnh sửa' : 'Danh mục mới' }}</span></div>
           <label>Tên danh mục <input name="categoryName" [(ngModel)]="categoryForm.name" required maxlength="120" placeholder="Ví dụ: Chăm sóc da" /></label>
-          <label>Đường dẫn (slug) <input name="categorySlug" [(ngModel)]="categoryForm.slug" required maxlength="120" pattern="[a-z0-9]+(?:-[a-z0-9]+)*" placeholder="cham-soc-da" /></label>
+          @if (categoryEditId) { <p class="form-hint">Đường dẫn: /{{ categoryForm.slug }}</p> } @else { <p class="form-hint">Đường dẫn sẽ được tạo tự động từ tên danh mục.</p> }
           <label>Mô tả <textarea name="categoryDescription" [(ngModel)]="categoryForm.description" rows="4" maxlength="1000"></textarea></label>
           <label class="check"><input name="categoryActive" type="checkbox" [(ngModel)]="categoryForm.isActive" /> Hiển thị danh mục</label>
           <div class="form-actions"><button class="primary" type="submit" [disabled]="saving() || categoryFormRef.invalid">{{ saving() ? 'Đang lưu…' : 'Lưu danh mục' }}</button><button type="button" (click)="resetCategory()">Làm mới</button></div>
