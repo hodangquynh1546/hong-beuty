@@ -27,7 +27,7 @@ import { RouterLink } from '@angular/router';
     .message { padding: 3rem; background: #f1e6e0; color: #594f4b; }
     .error { background: #f8e2e1; }
     button { border: 0; background: #332b2b; color: white; padding: .5rem 1rem; cursor: pointer; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(240px,1fr)); gap: 1.5rem; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(240px,1fr)); gap: 1.5rem; max-height: calc(100dvh - 330px); overflow-y: auto; align-content: start; padding: 4px; scrollbar-width: thin; }
     article { background: white; padding-bottom: 1.5rem; border: 1px solid #f0e5e0; border-radius: 7px; overflow: hidden; box-shadow: 0 8px 28px #3d28330a; transition: transform .35s, box-shadow .35s; }
     article:hover { transform: translateY(-6px); box-shadow: 0 20px 38px #3d283324; }
     article h2,article p,article strong { margin-left: 1rem; margin-right: 1rem; }
@@ -37,7 +37,7 @@ import { RouterLink } from '@angular/router';
     .tile { aspect-ratio: 1; display: grid; place-items: center; background: linear-gradient(145deg,#eadbd3,#b68f88); color: #fff; letter-spacing: .13em; font-size: .7rem; text-align: center; overflow: hidden; }
     .tile img { width: 100%; height: 100%; object-fit: cover; transition: transform .55s; }
     article:hover .tile img { transform: scale(1.06); }
-    @media(max-width:620px){ .page{padding:3rem 5vw 5rem}.filters{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;padding:.8rem;margin:1.5rem 0}.search{min-width:0}.search input,.search select{padding:.7rem;width:100%}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:.7rem}article{padding-bottom:.8rem}article h2{font-size:1rem;line-height:1.25;margin:.7rem .7rem .3rem}article p{display:none}article strong{display:block;margin:.3rem .7rem;font-size:.82rem}.tile{font-size:.5rem}h1{font-size:2.35rem} }
+    @media(max-width:620px){ .page{padding:1.5rem 5vw 3rem}.filters{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;padding:.8rem;margin:1rem 0}.search{min-width:0}.search input,.search select{padding:.7rem;width:100%}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:.7rem;max-height:calc(100dvh - 310px)}article{padding-bottom:.8rem}article h2{font-size:1rem;line-height:1.25;margin:.7rem .7rem .3rem}article p{display:none}article strong{display:block;margin:.3rem .7rem;font-size:.82rem}.tile{font-size:.5rem}h1{font-size:2.1rem} }
   `],
 })
 export class ProductsPage implements OnInit {
